@@ -4,7 +4,6 @@ package parser
 type Type int
 
 // Available types of a token
-// TODO: add string and float
 const (
 	TypeInvalid Type = iota
 	TypeComment
