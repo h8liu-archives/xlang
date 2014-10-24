@@ -182,6 +182,11 @@ func (lex *Lexer) Scan() bool {
 	return true
 }
 
+// Token returns the current token.
+func (lex *Lexer) Token() *Tok {
+	return lex.hold
+}
+
 // IOErr returns the IO error on scanning.
 func (lex *Lexer) IOErr() error {
 	return lex.c.Err()
