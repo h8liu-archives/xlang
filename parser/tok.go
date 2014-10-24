@@ -28,7 +28,7 @@ type Tok struct {
 	Pos  *Pos
 }
 
-// BlockBuilder defines the interface to build a block
+// blockBuilder defines the interface to build a block
 //
 // Conceptually, a block is a series of statements,
 // and a statement is a series of tokens or blocks
@@ -39,12 +39,12 @@ type Tok struct {
 // BlockBuilder.
 // It calls EndStmt() at the end of every statement.
 // It calls Close() at the end of the block.
-type BlockBuilder interface {
+type blockBuilder interface {
 	// EndStmt ends a statement
 	EndStmt()
 
 	// AddBlock appends a new block entry
-	AddBlock() BlockBuilder
+	AddBlock() blockBuilder
 
 	// AddToken appends a new token entry
 	AddTok(t *Tok)
