@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"io"
 )
 
 type cursor struct {
@@ -14,9 +15,9 @@ type cursor struct {
 	eof  bool
 }
 
-func newCursor(f string, s *runeScanner) *cursor {
+func newCursor(f string, r io.ReadCloser) *cursor {
 	ret := new(cursor)
-	ret.s = s
+	ret.s = newRuneScanner(r)
 	ret.file = f
 	ret.buf = new(bytes.Buffer)
 
@@ -29,7 +30,8 @@ func newCursor(f string, s *runeScanner) *cursor {
 }
 
 // Scan returns true if any progress is made.
-func (c *cursor) Scan() bool {
+// When a progress is made,
+func (c *cursor) Accept() bool {
 	if c.eof {
 		// pointing to EOF already, no progress made
 		return false
@@ -41,6 +43,13 @@ func (c *cursor) Scan() bool {
 	}
 
 	return true
+}
+
+// ScanNext returns true if progress is made and the pointer
+// is not pointing to EOF.
+// When it returns true, it is always safe to call Next().
+func (c *cursor) Scan() bool {
+	return c.Accept() && !c.EOF()
 }
 
 // Token wraps the the runes in the buffer into a token.
@@ -60,11 +69,22 @@ func (c *cursor) Token(t Type) *Tok {
 		Col:  c.col,
 	}
 
-	// reset the saving buffer
-	c.buf.Reset()
-	c.row, c.col = c.s.Pos()
+	c.resetBuf()
 
 	return ret
+}
+
+func (c *cursor) Discard() {
+	c.resetBuf()
+}
+
+func (c *cursor) resetBuf() {
+	c.buf.Reset()
+	c.row, c.col = c.s.Pos()
+}
+
+func (c *cursor) Buffered() string {
+	return c.buf.String()
 }
 
 // EOF checkes if the head cursor is pointing to the end of the file.
@@ -72,9 +92,9 @@ func (c *cursor) EOF() bool {
 	return c.eof
 }
 
-// Peek returns the rune pointed by the head cursor.
+// Next returns the rune pointed by the head cursor.
 // If the head cursor is pointing to the end of the file, it will panic.
-func (c *cursor) Peek() rune {
+func (c *cursor) Next() rune {
 	if c.eof {
 		panic("cursor pointing to the end of the file")
 	}

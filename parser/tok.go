@@ -6,13 +6,13 @@ type Type int
 // Available types of a token
 // TODO: add string and float
 const (
-	TypeIdent Type = iota
-	TypeInt
+	TypeInvalid Type = iota
 	TypeComment
 	TypeOperator
-
-	// TypeFloat
-	// TypeString
+	TypeIdent
+	TypeInt
+	TypeFloat
+	TypeString
 )
 
 // Pos defines the position of a token in a file
