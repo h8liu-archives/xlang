@@ -187,8 +187,8 @@ func (lex *Lexer) IOErr() error {
 	return lex.c.Err()
 }
 
-// LexOpen opens a file and creates lexing.
-func LexOpen(path string) (*Lexer, error) {
+// LexFile creates a lexer over a file.
+func LexFile(path string) (*Lexer, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		return nil, e
