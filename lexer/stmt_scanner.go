@@ -4,7 +4,7 @@ type stmtScanner struct {
 	stmt stmt
 
 	cur  int
-	hold *tokNode
+	hold *entry
 }
 
 var _ Stmt = new(stmtScanner)

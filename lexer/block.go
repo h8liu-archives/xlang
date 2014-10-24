@@ -1,8 +1,12 @@
 package lexer
 
-type block []stmt   // a block is a series of statements
-type stmt []tokNode // a statement is a series of token nodes
-type tokNode struct {
+// block, stmt and tokNode defines the internal memory representation
+// of a block, a statement and an entry
+
+type block []stmt // a block is a series of statements
+type stmt []entry // a statement is a series of token nodes
+type entry struct {
+	// en entry is either a token or a block
 	tok   *Tok
 	block block
 }
