@@ -11,8 +11,8 @@ type Pos struct {
 const (
 	TypeIdent Type = iota
 	TypeInt
-	TypeFloat
-	TypeString
+	// TypeFloat
+	// TypeString
 	TypeComment
 	TypeOperator
 )

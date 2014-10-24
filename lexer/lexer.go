@@ -12,7 +12,7 @@ type lexer struct {
 	r    io.ReadCloser
 }
 
-func open(path string) (*lexer, error) {
+func lexOpen(path string) (*lexer, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		return nil, e
@@ -21,7 +21,7 @@ func open(path string) (*lexer, error) {
 	return newLexer(path, f), nil
 }
 
-func lex(file, s string) *lexer {
+func lexString(file, s string) *lexer {
 	r := ioutil.NopCloser(strings.NewReader(s))
 	return newLexer(file, r)
 }
