@@ -7,34 +7,35 @@ import (
 	"strings"
 )
 
-// lexer is a token scanner
-type lexer struct {
-	e    error
+// Lexer is a token scanner
+type Lexer struct {
 	c    *cursor
 	last *Tok
 	hold *Tok
 }
 
-func newLexer(file string, r io.ReadCloser) *lexer {
-	ret := new(lexer)
+// NewLexer creates a lexer for an io stream.
+// It will close the stream automatically when the lexing ends.
+func NewLexer(file string, r io.ReadCloser) *Lexer {
+	ret := new(Lexer)
 	ret.c = newCursor(file, r)
 
 	return ret
 }
 
-func (lex *lexer) emitTok(t *Tok) {
+func (lex *Lexer) emitTok(t *Tok) {
 	lex.hold = t
 	if lex.hold.Type != TypeComment {
 		lex.last = t
 	}
 }
 
-func (lex *lexer) emitType(t Type) {
+func (lex *Lexer) emitType(t Type) {
 	tok := lex.c.Token(t)
 	lex.emitTok(tok)
 }
 
-func (lex *lexer) skipEndl() bool {
+func (lex *Lexer) skipEndl() bool {
 	if lex.last == nil {
 		return true
 	}
@@ -51,7 +52,7 @@ func (lex *lexer) skipEndl() bool {
 	return true
 }
 
-func (lex *lexer) scanInt() {
+func (lex *Lexer) scanInt() {
 	for lex.c.Scan() {
 		r := lex.c.Next()
 		if !isDigit(r) {
@@ -62,7 +63,7 @@ func (lex *lexer) scanInt() {
 	lex.emitType(TypeInt)
 }
 
-func (lex *lexer) scanIdent() {
+func (lex *Lexer) scanIdent() {
 	for lex.c.Scan() {
 		r := lex.c.Next()
 		if !isDigit(r) && !isLetter(r) {
@@ -73,7 +74,7 @@ func (lex *lexer) scanIdent() {
 	lex.emitType(TypeIdent)
 }
 
-func (lex *lexer) scanLineComment() {
+func (lex *Lexer) scanLineComment() {
 	for lex.c.Scan() {
 		r := lex.c.Next()
 		if r == '\n' {
@@ -84,7 +85,7 @@ func (lex *lexer) scanLineComment() {
 	lex.emitType(TypeComment)
 }
 
-func (lex *lexer) scanBlockComment() {
+func (lex *Lexer) scanBlockComment() {
 	var star bool
 	var complete bool
 
@@ -105,7 +106,7 @@ func (lex *lexer) scanBlockComment() {
 	}
 }
 
-func (lex *lexer) isWhite(r rune) bool {
+func (lex *Lexer) isWhite(r rune) bool {
 	if isWhite(r) {
 		return true
 	}
@@ -117,7 +118,7 @@ func (lex *lexer) isWhite(r rune) bool {
 	return false
 }
 
-func (lex *lexer) skipWhite() {
+func (lex *Lexer) skipWhite() {
 	if lex.c.EOF() || !lex.isWhite(lex.c.Next()) {
 		return // no white to skip
 	}
@@ -132,7 +133,7 @@ func (lex *lexer) skipWhite() {
 	lex.c.Discard()
 }
 
-func (lex *lexer) scanOperator() {
+func (lex *Lexer) scanOperator() {
 	r := lex.c.Next()
 
 	if lex.c.Scan() && r == '/' {
@@ -154,12 +155,13 @@ func (lex *lexer) scanOperator() {
 	lex.emitType(TypeOperator)
 }
 
-func (lex *lexer) scanInvalid() {
+func (lex *Lexer) scanInvalid() {
 	lex.c.Accept()
 	lex.emitType(TypeInvalid)
 }
 
-func (lex *lexer) Scan() bool {
+// Scan returns true where there is a new token
+func (lex *Lexer) Scan() bool {
 	lex.skipWhite()
 
 	if lex.c.EOF() {
@@ -180,20 +182,23 @@ func (lex *lexer) Scan() bool {
 	return true
 }
 
-func (lex *lexer) Err() error {
-	return lex.e
+// IOErr returns the IO error on scanning.
+func (lex *Lexer) IOErr() error {
+	return lex.c.Err()
 }
 
-func lexOpen(path string) (*lexer, error) {
+// LexOpen opens a file and creates lexing.
+func LexOpen(path string) (*Lexer, error) {
 	f, e := os.Open(path)
 	if e != nil {
 		return nil, e
 	}
 
-	return newLexer(path, f), nil
+	return NewLexer(path, f), nil
 }
 
-func lexString(file, s string) *lexer {
+// LexString creates a lexer over a string.
+func LexString(file, s string) *Lexer {
 	r := ioutil.NopCloser(strings.NewReader(s))
-	return newLexer(file, r)
+	return NewLexer(file, r)
 }
