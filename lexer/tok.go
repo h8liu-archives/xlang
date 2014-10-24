@@ -1,31 +1,38 @@
 package lexer
 
+// Type is the type of a token
 type Type int
 
+// Available types of a token
+// TODO: add string and float
+const (
+	TypeIdent Type = iota
+	TypeInt
+	TypeComment
+	TypeOperator
+
+	// TypeFloat
+	// TypeString
+)
+
+// Pos defines the position of a token in a file
 type Pos struct {
 	File string
 	Row  int
 	Col  int
 }
 
-const (
-	TypeIdent Type = iota
-	TypeInt
-	// TypeFloat
-	// TypeString
-	TypeComment
-	TypeOperator
-)
-
+// Tok is a token in a file
 type Tok struct {
 	Type Type
 	Lit  string
 	Pos  *Pos
 }
 
-// A program is a block.
-// A block is a series of statements.
-// A statement is a series of tokens or blocks
+// BlockBuilder defines the interface to build a block
+//
+// Conceptually, a block is a series of statements,
+// and a statement is a series of tokens or blocks
 //
 // A lexer uses a block builder to build a block.
 // It calls Token() for every non-block token in the statement
@@ -34,8 +41,15 @@ type Tok struct {
 // It calls EndStmt() at the end of every statement.
 // It calls Close() at the end of the block.
 type BlockBuilder interface {
+	// EndStmt ends a statement
 	EndStmt()
+
+	// AddBlock appends a new block entry
 	AddBlock() BlockBuilder
+
+	// AddToken appends a new token entry
 	AddTok(t *Tok)
+
+	// Close closes this block
 	Close()
 }

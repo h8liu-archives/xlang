@@ -67,7 +67,7 @@ func (c *cursor) Token(t Type) *Tok {
 	return ret
 }
 
-// Closed checkes if the head cursor is pointing to the end of the file.
+// EOF checkes if the head cursor is pointing to the end of the file.
 func (c *cursor) EOF() bool {
 	return c.eof
 }
