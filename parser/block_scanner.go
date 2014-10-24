@@ -1,4 +1,4 @@
-package lexer
+package parser
 
 type blockScanner struct {
 	block block

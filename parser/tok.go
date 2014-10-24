@@ -1,4 +1,4 @@
-package lexer
+package parser
 
 // Type is the type of a token
 type Type int
