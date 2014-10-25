@@ -8,10 +8,11 @@ editorInit = ->
     editor.setShowFoldWidgets(false)
     editor.setDisplayIndentGuides(false)
     editor.setReadOnly(false)
+    ff = "Consolas, Inconsolata, Monaco, \"Courier New\", Courier, monospace"
     editor.setOptions({
         maxLines: Infinity,
         minLines: 20,
-        fontFamily: "Consolas, Inconsolata, Monaco, \"Courier New\", Courier, monospace",
+        fontFamily: ff,
         fontSize: "13px",
     })
     editor.commands.removeCommands(["gotoline", "find"])
@@ -29,8 +30,26 @@ editorInit = ->
     editor.clearSelection()
     return
 
+exampleInit = ->
+    examples = ['3p4']
+
+    ul = $('<ul id="examples"/>')
+    for f in examples
+        li = $('<li><a href="#">' + f + '</a></li>')
+        li.find('a').click( (e) ->
+            e.preventDefault()
+            # TODO: load the file
+            console.log("load "+f)
+            return
+        )
+        ul.append(li)
+
+    $("div#filelist").append(ul)
+    return
+
 main = ->
     editorInit()
+    exampleInit()
 
     $("#tokens").hide()
     $("#console").hide()
