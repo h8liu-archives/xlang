@@ -12,6 +12,8 @@ type Lexer struct {
 	c    *cursor
 	last *Tok // last non-comment token
 	hold *Tok // the current token that the scanner points at
+
+	NoKeyword bool // do not convert idents to keywords
 }
 
 // NewLexer creates a lexer for an io stream.
@@ -42,7 +44,8 @@ func (lex *Lexer) skipEndl() bool {
 	t := lex.last.Type
 
 	switch t {
-	case TypeIdent, TypeInt, TypeFloat, TypeString:
+	case TypeIdent, TypeKeyword, TypeInt,
+		TypeFloat, TypeString:
 		return false
 	case TypeOperator:
 		lit := lex.last.Lit
@@ -71,7 +74,11 @@ func (lex *Lexer) scanIdent() {
 		}
 	}
 
-	lex.emitType(TypeIdent)
+	if !lex.NoKeyword && isKeyword(lex.c.Buffered()) {
+		lex.emitType(TypeKeyword)
+	} else {
+		lex.emitType(TypeIdent)
+	}
 }
 
 func (lex *Lexer) scanLineComment() {
