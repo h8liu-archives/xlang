@@ -2,6 +2,7 @@
 
 all:
 	go install -v ./...
+	make -C www --no-print-directory
 
 rall:
 	go build -a ./...

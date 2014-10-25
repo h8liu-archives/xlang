@@ -1,9 +1,7 @@
 editorInit = ->
-    console.log("here")
     Range = ace.require("ace/range").Range
     editor = ace.edit("editor")
     xlang.editor = editor
-    console.log(editor.getValue())
     session = editor.getSession()
 
     editor.setTheme("ace/theme/tomorrow")
@@ -43,8 +41,13 @@ exampleInit = ->
         li = $('<li><a href="#">' + f + '</a></li>')
         li.find('a').click( (e) ->
             e.preventDefault()
-            # TODO: load the file
-            console.log("load "+f)
+            # console.log("load file: "+f)
+            $.ajax("tests/" + f + ".x", {
+                success: (dat) ->
+                    xlang.editor.setValue(dat)
+                    xlang.editor.clearSelection()
+                    return
+            })
             return
         )
         ul.append(li)
