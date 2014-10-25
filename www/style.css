@@ -1,0 +1,89 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400italic,400);
+
+body {
+	font-family: "Open Sans", sans-serif;
+	background: #fff;
+    color: #000;
+    margin: 0;
+    padding: 0;
+	margin-left: .1in;
+	margin-right: .1in;
+    font-size: 13px;
+}
+
+a {
+    color: #009;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+pre, code {
+    font-family: Consolas, Menlo, "Courier New", monospace;
+    font-size: 13px;
+}
+
+#container {
+	margin-left: calc(50% - .1in - 300px);
+	width: 600px;
+	padding: .1in;
+}
+
+#filelist {
+    float: left;
+    margin-left: -130px;
+    width: calc(130px - .3in);
+    text-align: right;
+}
+
+h1, h2, h3 {
+    color: #666;
+    font-weight: normal;
+}
+
+h3 {
+    font-size: 14px;
+    margin: 0;
+    padding-bottom: .03in;
+    border-bottom: 1px #ccc solid;
+    margin-bottom: .05in;
+}
+
+#filelist ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+ul.tabs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* background: #eee; */
+    padding-top: .05in;
+    padding-bottom: .05in;
+    margin-bottom: .1in;
+}
+
+ul.tabs li {
+    display: inline;
+    padding: .05in;
+    padding-left: .1in;
+    padding-right: .1in;
+    margin: 0;
+}
+
+#main {
+    padding-left: .05in;
+    padding-right: .05in;
+    padding-top: .07in;
+    padding-bottom: .07in;
+    border: 1px solid #ccc;
+    border-radius: .05in;
+}
+
+#editor {
+    width: 100%;
+}
