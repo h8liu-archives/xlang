@@ -47,7 +47,7 @@ h3 {
     font-size: 14px;
     margin: 0;
     padding-bottom: .03in;
-    border-bottom: 1px #ccc solid;
+    /* border-bottom: 1px #ccc solid; */
     margin-bottom: .05in;
 }
 
