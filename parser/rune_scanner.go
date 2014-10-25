@@ -10,6 +10,7 @@ type runeScanner struct {
 	r        *bufio.Reader
 	row, col int
 	closed   bool
+	scanned  bool
 
 	hold rune
 	e    error
@@ -53,8 +54,10 @@ func (s *runeScanner) Scan() bool {
 	if wasEndl {
 		s.row++
 		s.col = 0
-	} else {
+	} else if s.scanned {
 		s.col++
+	} else {
+		s.scanned = true
 	}
 
 	return true
@@ -76,6 +79,9 @@ func (s *runeScanner) Rune() rune {
 	}
 	if s.e != nil {
 		panic("scanning error encountered")
+	}
+	if !s.scanned {
+		panic("not scanned yet")
 	}
 	return s.hold
 }

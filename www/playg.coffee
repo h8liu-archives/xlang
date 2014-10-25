@@ -1,6 +1,8 @@
+
 editorInit = ->
     Range = ace.require("ace/range").Range
     editor = ace.edit("editor")
+    xlang.editor = editor
     session = editor.getSession()
 
     editor.setTheme("ace/theme/tomorrow")
@@ -53,11 +55,19 @@ exampleInit = ->
     $("div#filelist").append(ul)
     return
 
+updateTokens = ->
+    code = xlang.editor.getValue()
+    parsed = xlang.parseTokens("", code)
+    $("#tokens").html(parsed)
+    return
+
 main = ->
     editorInit()
     exampleInit()
 
     # $("#tokens").hide()
+    updateTokens()
+
     $("#console").hide()
 
     $("#but-edit").click( (e) ->
@@ -67,6 +77,12 @@ main = ->
 
     $("#but-tokens").click( (e) ->
         e.preventDefault()
+        updateTokens()
+        return
+    )
+
+    xlang.editor.getSession().on("change", ->
+        updateTokens()
         return
     )
 

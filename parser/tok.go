@@ -34,7 +34,7 @@ func (p *Pos) String() string {
 type Tok struct {
 	Type Type
 	Lit  string
-	Pos  *Pos
+	*Pos
 }
 
 var typeStr = map[Type]string{

@@ -21,6 +21,8 @@ func newCursor(f string, r io.ReadCloser) *cursor {
 	ret.file = f
 	ret.buf = new(bytes.Buffer)
 
+	ret.row, ret.col = ret.s.Pos()
+
 	// bootstrap the header
 	if !ret.s.Scan() {
 		ret.eof = true

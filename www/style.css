@@ -97,3 +97,21 @@ ul.tabs li {
     font-size: 13px;
 }
 
+span.keyword {
+    color: #909;
+}
+span.ident {
+    color: #009;
+}
+span.num {
+    color: #930;
+}
+span.operator {
+    color: #090;
+}
+span.implicit-semi {
+    color: #999;
+}
+span.comment {
+	color: #66c;
+}
