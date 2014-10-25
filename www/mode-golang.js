@@ -222,12 +222,12 @@ var MatchingBraceOutdent = function() {};
         if (! /^\s+$/.test(line))
             return false;
 
-        return /^\s*\}/.test(input);
+        return /^\s*[\}\)]/.test(input);
     };
 
     this.autoOutdent = function(doc, row) {
         var line = doc.getLine(row);
-        var match = line.match(/^(\s*\})/);
+        var match = line.match(/^(\s*[\}\)])/);
 
         if (!match) return 0;
 

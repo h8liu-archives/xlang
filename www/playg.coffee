@@ -1,13 +1,15 @@
 editorInit = ->
+    Range = ace.require("ace/range").Range
     editor = ace.edit("editor")
+    session = editor.getSession()
 
     editor.setTheme("ace/theme/tomorrow")
-    editor.getSession().setMode("ace/mode/golang")
+    session.setMode("ace/mode/golang")
     editor.renderer.setShowGutter(false)
     editor.setHighlightActiveLine(false)
     editor.setShowFoldWidgets(false)
     editor.setDisplayIndentGuides(false)
-    editor.setReadOnly(false)
+    # editor.setReadOnly(false)
     ff = "Consolas, Inconsolata, Monaco, \"Courier New\", Courier, monospace"
     editor.setOptions({
         maxLines: Infinity,
@@ -23,11 +25,16 @@ editorInit = ->
         '',
         'func main() {',
         '\tprintln(x + y)',
+        '\t中文',
         '}',
     ].join('\n')
 
     editor.setValue(prog)
     editor.clearSelection()
+    
+    session = editor.getSession()
+    session.addMarker(new Range(4, 1, 5, 3), "ace_selected-word", "text")
+
     return
 
 exampleInit = ->
