@@ -1,8 +1,9 @@
 editorInit = ->
+    console.log("here")
     Range = ace.require("ace/range").Range
-    editor = ace.edit("#editor")
+    editor = ace.edit("editor")
     xlang.editor = editor
-	console.log(editor.getValue())
+    console.log(editor.getValue())
     session = editor.getSession()
 
     editor.setTheme("ace/theme/tomorrow")
@@ -15,7 +16,7 @@ editorInit = ->
     ff = "Consolas, Inconsolata, Monaco, \"Courier New\", Courier, monospace"
     editor.setOptions({
         maxLines: Infinity,
-        minLines: 20,
+        minLines: 10,
         fontFamily: ff,
         fontSize: "13px",
     })
@@ -32,7 +33,7 @@ editorInit = ->
 
     editor.setValue(prog)
     editor.clearSelection()
-	return
+    return
 
 exampleInit = ->
     examples = ['3p4']
@@ -61,11 +62,10 @@ main = ->
     editorInit()
     exampleInit()
     updateTokens()
-	xlang.editor.getSession().on("change", ->
-		updateTokens()
-		return
-	)
-
-	return
+    xlang.editor.getSession().on("change", ->
+        updateTokens()
+        return
+    )
+    return
 
 $(document).ready(main)
