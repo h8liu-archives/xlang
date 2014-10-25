@@ -10,8 +10,8 @@ import (
 // Lexer is a token scanner
 type Lexer struct {
 	c    *cursor
-	last *Tok
-	hold *Tok
+	last *Tok // last non-comment token
+	hold *Tok // the current token that the scanner points at
 }
 
 // NewLexer creates a lexer for an io stream.
