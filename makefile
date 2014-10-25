@@ -30,5 +30,3 @@ asmt:
 lint:
 	golint `find . -name "*.go"`
 
-js:
-	gopherjs build ./xlangjs -o xlang.js
