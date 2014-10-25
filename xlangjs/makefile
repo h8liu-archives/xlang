@@ -1,5 +1,8 @@
 .PHONY: all fmt tags doc
 
+js:
+	gopherjs build -o xlang.js
+
 all:
 	go install -v ./...
 
@@ -30,5 +33,3 @@ asmt:
 lint:
 	golint `find . -name "*.go"`
 
-js:
-	gopherjs build ./xlangjs -o xlang.js
