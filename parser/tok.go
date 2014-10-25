@@ -19,7 +19,6 @@ const (
 	TypeKeyword
 )
 
-
 // Pos defines the position of a token in a file
 type Pos struct {
 	File string
@@ -38,15 +37,15 @@ type Tok struct {
 	Pos  *Pos
 }
 
-var typeStr = map[Type]string {
-	TypeInvalid: "invalid",
-	TypeComment: "comment",
+var typeStr = map[Type]string{
+	TypeInvalid:  "invalid",
+	TypeComment:  "comment",
 	TypeOperator: "operator",
-	TypeIdent: "ident",
-	TypeKeyword: "keyword",
-	TypeInt: "int",
-	TypeFloat: "float",
-	TypeString: "string",
+	TypeIdent:    "ident",
+	TypeKeyword:  "keyword",
+	TypeInt:      "int",
+	TypeFloat:    "float",
+	TypeString:   "string",
 }
 
 func (t Type) String() string {

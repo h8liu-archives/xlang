@@ -1,6 +1,6 @@
 package parser
 
-var keywords = func () map[string]bool {
+var keywords = func() map[string]bool {
 	ret := make(map[string]bool)
 
 	for _, k := range []string{
@@ -17,7 +17,6 @@ var keywords = func () map[string]bool {
 
 	return ret
 }()
-
 
 func isKeyword(s string) bool {
 	return keywords[s]
