@@ -25,7 +25,6 @@ editorInit = ->
         '',
         'func main() {',
         '\tprintln(x + y)',
-        '\t中文',
         '}',
     ].join('\n')
 
@@ -33,7 +32,7 @@ editorInit = ->
     editor.clearSelection()
     
     session = editor.getSession()
-    session.addMarker(new Range(4, 1, 5, 3), "ace_selected-word", "text")
+    # session.addMarker(new Range(4, 1, 5, 3), "ace_selected-word", "text")
 
     return
 
@@ -58,7 +57,7 @@ main = ->
     editorInit()
     exampleInit()
 
-    $("#tokens").hide()
+    # $("#tokens").hide()
     $("#console").hide()
 
     $("#but-edit").click( (e) ->

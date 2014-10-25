@@ -26,6 +26,7 @@ pre, code {
 }
 
 #container {
+    margin-top: .2in;
 	margin-left: calc(50% - .1in - 300px);
 	width: 600px;
 	padding: .1in;
@@ -58,8 +59,11 @@ h3 {
 }
 
 ul.tabs {
+    float: right;
     list-style: none;
+    width: 150px;
     margin: 0;
+    margin-right: -160px;
     padding: 0;
     /* background: #eee; */
     padding-top: .05in;
@@ -68,8 +72,7 @@ ul.tabs {
 }
 
 ul.tabs li {
-    display: inline;
-    padding: .05in;
+    padding: .02in;
     padding-left: .1in;
     padding-right: .1in;
     margin: 0;
@@ -87,3 +90,10 @@ ul.tabs li {
 #editor {
     width: 100%;
 }
+
+#tokens {
+    padding: .05in;
+    font-family: "Consolas", "Menlo", "Courier New", monospace;
+    font-size: 13px;
+}
+
