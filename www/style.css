@@ -78,13 +78,15 @@ ul.tabs li {
     margin: 0;
 }
 
-#main {
+.box {
     padding-left: .05in;
     padding-right: .05in;
     padding-top: .07in;
     padding-bottom: .07in;
     border: 1px solid #ccc;
     border-radius: .05in;
+	margin-bottom: .2in;
+	min-height: .5in;
 }
 
 #editor {

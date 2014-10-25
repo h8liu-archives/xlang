@@ -1,8 +1,8 @@
-
 editorInit = ->
     Range = ace.require("ace/range").Range
-    editor = ace.edit("editor")
+    editor = ace.edit("#editor")
     xlang.editor = editor
+	console.log(editor.getValue())
     session = editor.getSession()
 
     editor.setTheme("ace/theme/tomorrow")
@@ -32,11 +32,7 @@ editorInit = ->
 
     editor.setValue(prog)
     editor.clearSelection()
-    
-    session = editor.getSession()
-    # session.addMarker(new Range(4, 1, 5, 3), "ace_selected-word", "text")
-
-    return
+	return
 
 exampleInit = ->
     examples = ['3p4']
@@ -64,32 +60,12 @@ updateTokens = ->
 main = ->
     editorInit()
     exampleInit()
-
-    # $("#tokens").hide()
     updateTokens()
+	xlang.editor.getSession().on("change", ->
+		updateTokens()
+		return
+	)
 
-    $("#console").hide()
-
-    $("#but-edit").click( (e) ->
-        e.preventDefault()
-        return
-    )
-
-    $("#but-tokens").click( (e) ->
-        e.preventDefault()
-        updateTokens()
-        return
-    )
-
-    xlang.editor.getSession().on("change", ->
-        updateTokens()
-        return
-    )
-
-    $("#but-console").click( (e) ->
-        e.preventDefault()
-        return
-    )
-    return
+	return
 
 $(document).ready(main)
