@@ -31,11 +31,12 @@ func main() {
 		return
 	}
 
-	lex := parser.LexString("test.x", prog)
+	_, errs := parser.ParseStr("test.x", prog)
 
-	for lex.Scan() {
-		t := lex.Token()
-		fmt.Println(t)
+	if errs != nil {
+		for errs.Scan() {
+			fmt.Println(errs.Error())
+		}
 	}
 }
 

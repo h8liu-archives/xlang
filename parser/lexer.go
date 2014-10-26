@@ -216,8 +216,8 @@ func LexFile(path string) (*Lexer, error) {
 	return Lex(path, f), nil
 }
 
-// LexString creates a lexer over a string.
-func LexString(file, s string) *Lexer {
+// LexStr creates a lexer over a string.
+func LexStr(file, s string) *Lexer {
 	r := ioutil.NopCloser(strings.NewReader(s))
 	return Lex(file, r)
 }

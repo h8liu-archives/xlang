@@ -23,11 +23,38 @@ func main() {
 func main() {
 	js.Global.Set("xlang", map[string]interface{}{
 		"parseTokens": parseTokens,
+		"parse":       parse,
 	})
 }
 
+func _parse(file, code string) (block, errs string) {
+	_, es := parser.ParseStr(file, code)
+	if es != nil {
+		buf := new(bytes.Buffer)
+
+		for es.Scan() {
+			fmt.Fprintf(buf, `<div class="error">%s</div>`,
+				template.HTMLEscapeString(es.Error().String()),
+			)
+		}
+
+		return "", buf.String()
+	}
+
+	return "", ""
+}
+
+func parse(file, code string) map[string]interface{} {
+	ret := make(map[string]interface{})
+	block, errs := _parse(file, code)
+	ret["block"] = block
+	ret["errs"] = errs
+
+	return ret
+}
+
 func parseTokens(file, code string) string {
-	lex := parser.LexString(file, code)
+	lex := parser.LexStr(file, code)
 	out := new(bytes.Buffer)
 
 	lines := strings.Split(code, "\n")

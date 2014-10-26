@@ -93,10 +93,16 @@ ul.tabs li {
     width: 100%;
 }
 
-#tokens {
+#tokens, #console {
     padding: .05in;
+    padding-top: .02in;
+    padding-bottom: .02in;
     font-family: "Consolas", "Menlo", "Courier New", monospace;
     font-size: 13px;
+}
+
+#console, div.error {
+    color: #900;
 }
 
 span.keyword {

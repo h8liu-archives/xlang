@@ -57,8 +57,11 @@ exampleInit = ->
 
 updateTokens = ->
     code = xlang.editor.getValue()
-    parsed = xlang.parseTokens("", code)
-    $("#tokens").html(parsed)
+    tokens = xlang.parseTokens("", code)
+    $("#tokens").html(tokens)
+    parsed = xlang.parse("test.x", code)
+    $("#console").html(parsed.errs)
+
     return
 
 main = ->
