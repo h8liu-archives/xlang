@@ -16,5 +16,5 @@ func (e *Error) Error() string {
 		return fmt.Sprintf("%s: %s", e.Pos, e.S)
 	}
 
-	return e.S
+	return fmt.Sprintf("error: %s", e.Error())
 }
