@@ -12,15 +12,17 @@ type Lexer struct {
 	c    *cursor
 	last *Tok // last non-comment token
 	hold *Tok // the current token that the scanner points at
+	errs *errList
 
 	NoKeyword bool // do not convert idents to keywords
 }
 
-// NewLexer creates a lexer for an io stream.
+// Lex creates a lexer for an io stream.
 // It will close the stream automatically when the lexing ends.
-func NewLexer(file string, r io.ReadCloser) *Lexer {
+func Lex(file string, r io.ReadCloser) *Lexer {
 	ret := new(Lexer)
 	ret.c = newCursor(file, r)
+	ret.errs = newErrList()
 
 	return ret
 }
@@ -30,6 +32,11 @@ func (lex *Lexer) emitTok(t *Tok) {
 	if lex.hold.Type != TypeComment {
 		lex.last = t
 	}
+}
+
+// Errors returns the lexing error list.
+func (lex *Lexer) Errors() ErrList {
+	return lex.errs
 }
 
 func (lex *Lexer) emitType(t Type) {
@@ -109,7 +116,7 @@ func (lex *Lexer) scanBlockComment() {
 
 	lex.emitType(TypeComment)
 	if !complete {
-		// TODO: report imcomplete block comment parsing error
+		lex.errs.Log(lex.c.Pos(), "eof in block comment")
 	}
 }
 
@@ -206,11 +213,11 @@ func LexFile(path string) (*Lexer, error) {
 		return nil, e
 	}
 
-	return NewLexer(path, f), nil
+	return Lex(path, f), nil
 }
 
 // LexString creates a lexer over a string.
 func LexString(file, s string) *Lexer {
 	r := ioutil.NopCloser(strings.NewReader(s))
-	return NewLexer(file, r)
+	return Lex(file, r)
 }

@@ -54,6 +54,15 @@ func (c *cursor) Scan() bool {
 	return c.Accept() && !c.EOF()
 }
 
+// Pos returns the current position of the head cursor.
+func (c *cursor) Pos() *Pos {
+	return &Pos{
+		File: c.file,
+		Row:  c.row,
+		Col:  c.col,
+	}
+}
+
 // Token wraps the the runes in the buffer into a token.
 // It then resets the buffer cursor.
 // It panics when nothing is buffered.
@@ -65,11 +74,7 @@ func (c *cursor) Token(t Type) *Tok {
 	ret := new(Tok)
 	ret.Type = t
 	ret.Lit = c.buf.String()
-	ret.Pos = &Pos{
-		File: c.file,
-		Row:  c.row,
-		Col:  c.col,
-	}
+	ret.Pos = c.Pos()
 
 	c.resetBuf()
 
