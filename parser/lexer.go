@@ -179,6 +179,7 @@ func (lex *Lexer) Scan() bool {
 	lex.skipWhite()
 
 	if lex.c.EOF() {
+		lex.hold = nil
 		return false
 	}
 	r := lex.c.Next()
@@ -198,7 +199,7 @@ func (lex *Lexer) Scan() bool {
 
 // EOF returns if lexer reaches the end of file.
 func (lex *Lexer) EOF() bool {
-	return lex.c.EOF()
+	return lex.hold == nil && lex.c.EOF()
 }
 
 // Pos returns the current position of the scanning cursor.

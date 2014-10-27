@@ -56,8 +56,8 @@ func main() {
 		for errs.Scan() {
 			fmt.Println(errs.Error())
 		}
+	} else {
+		printBlock(block)
+		fmt.Println()
 	}
-
-	printBlock(block)
-	fmt.Println()
 }
