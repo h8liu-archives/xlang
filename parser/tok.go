@@ -37,8 +37,27 @@ var typeStr = map[Type]string{
 	TypeString:   "string",
 }
 
+var typeShortStr = map[Type]string{
+	TypeInvalid:  "iv",
+	TypeComment:  "cm",
+	TypeOperator: "op",
+	TypeIdent:    "id",
+	TypeKeyword:  "kw",
+	TypeInt:      "i",
+	TypeFloat:    "f",
+	TypeString:   "str",
+}
+
 func (t Type) String() string {
 	ret, found := typeStr[t]
+	if !found {
+		ret = fmt.Sprintf("type-%d", t)
+	}
+	return ret
+}
+
+func (t Type) ShortStr() string {
+	ret, found := typeShortStr[t]
 	if !found {
 		ret = fmt.Sprintf("type-%d", t)
 	}

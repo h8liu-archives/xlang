@@ -39,28 +39,39 @@ func endBlockToken(t *Tok) bool {
 }
 
 func startBlockToken(t *Tok) bool {
-	return t.Type == TypeOperator && t.Lit == "}"
+	return t.Type == TypeOperator && t.Lit == "{"
 }
 
 func (p *parser) parseEntry() *Entry {
-	if p.lex.Scan() {
-		t := p.lex.Token()
-		if endStmtToken(t) {
+	var t *Tok
+
+	for {
+		if !p.lex.Scan() {
 			return nil
 		}
-		if startBlockToken(t) {
-			b := p.parseBlock()
 
-			if p.lex.EOF() && !p.eofErrored {
-				p.errs.Log(p.lex.Pos(), "unexpected EOF")
-				p.eofErrored = true
-			}
-
-			return &Entry{Block: b}
+		t = p.lex.Token()
+		if t.Type != TypeComment {
+			break
 		}
-		return &Entry{Tok: t}
 	}
-	return nil
+
+	if endStmtToken(t) {
+		return nil
+	}
+
+	if startBlockToken(t) {
+		b := p.parseBlock()
+
+		if p.lex.EOF() && !p.eofErrored {
+			p.errs.Log(p.lex.Pos(), "unexpected EOF")
+			p.eofErrored = true
+		}
+
+		return &Entry{Block: b}
+	}
+
+	return &Entry{Tok: t}
 }
 
 // parseStmt returns a statement, or nil when reaching end of a block
@@ -98,15 +109,15 @@ func (p *parser) parseBlock() Block {
 	return b
 }
 
-func (p *parser) parse(lex *Lexer) Block {
+func (p *parser) parse() Block {
 	return p.parseBlock()
 }
 
 // Parse parses a file from the input stream.
 func Parse(file string, r io.ReadCloser) (Block, ErrList) {
 	lex := Lex(file, r)
-	p := new(parser)
-	ret := p.parse(lex)
+	p := newParser(lex)
+	ret := p.parse()
 
 	ioErr := lex.IOErr()
 	if ioErr != nil {
