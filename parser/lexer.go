@@ -196,6 +196,16 @@ func (lex *Lexer) Scan() bool {
 	return true
 }
 
+// EOF returns if lexer reaches the end of file.
+func (lex *Lexer) EOF() bool {
+	return lex.c.EOF()
+}
+
+// Pos returns the current position of the scanning cursor.
+func (lex *Lexer) Pos() *Pos {
+	return lex.c.Pos()
+}
+
 // Token returns the current token.
 func (lex *Lexer) Token() *Tok {
 	return lex.hold

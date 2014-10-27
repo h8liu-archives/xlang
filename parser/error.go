@@ -13,7 +13,7 @@ type Error struct {
 // Error returns the error string.
 func (e *Error) Error() string {
 	if e.Pos != nil {
-		return fmt.Sprintf("%s: %s", 
+		return fmt.Sprintf("%s: %s",
 			e.Pos.StrRowOnly(), e.S,
 		)
 	}
