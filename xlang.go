@@ -31,7 +31,7 @@ func printIdent() {
 func printBlock(b parser.Block) {
 	fmt.Println("{")
 	ident++
-	
+
 	for _, stmt := range b {
 		printStmt(stmt)
 	}
@@ -71,7 +71,7 @@ func main() {
 			fmt.Println(errs.Error())
 		}
 	}
-	
-	printBlock(block) 
+
+	printBlock(block)
 	fmt.Println()
 }
