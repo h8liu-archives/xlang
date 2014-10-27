@@ -93,7 +93,7 @@ ul.tabs li {
     width: 100%;
 }
 
-#tokens, #console {
+#tokens, #console, #stmt-tree {
     padding: .05in;
     padding-top: .02in;
     padding-bottom: .02in;
