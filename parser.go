@@ -1,4 +1,4 @@
-package parser
+package xlang
 
 import (
 	"io"
@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func singleErr(e error) ErrList {
-	errs := newErrList()
+func singleErr(e error) *ErrList {
+	errs := NewErrList()
 	errs.Log(nil, e.Error())
 	return errs
 }
@@ -16,7 +16,7 @@ func singleErr(e error) ErrList {
 type parser struct {
 	lex   *Lexer
 	block Block
-	errs  *errList
+	errs  *ErrList
 
 	eofErrored bool
 }
@@ -24,7 +24,7 @@ type parser struct {
 func newParser(lex *Lexer) *parser {
 	ret := new(parser)
 	ret.lex = lex
-	ret.errs = newErrList()
+	ret.errs = NewErrList()
 
 	return ret
 }
@@ -131,7 +131,7 @@ func (p *parser) parse() Block {
 }
 
 // Parse parses a file from the input stream.
-func Parse(file string, r io.ReadCloser) (Block, ErrList) {
+func Parse(file string, r io.ReadCloser) (Block, *ErrList) {
 	lex := Lex(file, r)
 	p := newParser(lex)
 	ret := p.parse()
@@ -154,7 +154,7 @@ func Parse(file string, r io.ReadCloser) (Block, ErrList) {
 }
 
 // ParseFile parses a file (on the file system).
-func ParseFile(path string) (Block, ErrList) {
+func ParseFile(path string) (Block, *ErrList) {
 	f, e := os.Open(path)
 	if e != nil {
 		return nil, singleErr(e)
@@ -164,7 +164,7 @@ func ParseFile(path string) (Block, ErrList) {
 }
 
 // ParseStr parse a file from a string.
-func ParseStr(file, s string) (Block, ErrList) {
+func ParseStr(file, s string) (Block, *ErrList) {
 	r := ioutil.NopCloser(strings.NewReader(s))
 	return Parse(file, r)
 }

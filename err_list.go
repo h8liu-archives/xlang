@@ -1,54 +1,40 @@
-package parser
+package xlang
 
 import (
 	"fmt"
 )
 
-// ErrList defines the interface for iterating over
-// an error list.
-type ErrList interface {
-	// Len returns the total count of errors in the list
-	Len() int
+const maxListError = 20
 
-	// Scan returns if there is an error for scanning.
-	Scan() bool
-
-	// Error returns the error.
-	Error() *Error
-}
-
-type errList struct {
-	maxError int // maximum number of errors to record in the list
-	errs     []*Error
-
+type ErrList struct {
+	errs    []*Error
 	scanned bool
 	scanPtr int
 	hold    *Error
 }
 
-func newErrList() *errList {
-	ret := new(errList)
-	ret.maxError = 20
+func NewErrList() *ErrList {
+	ret := new(ErrList)
 
 	return ret
 }
 
 // Log appends an error to the error list.
 // It panics when error is nil.
-func (lst *errList) Log(p *Pos, f string, args ...interface{}) {
-	if len(lst.errs) < lst.maxError {
+func (lst *ErrList) Log(p *Pos, f string, args ...interface{}) {
+	if len(lst.errs) < maxListError {
 		e := &Error{p, fmt.Sprintf(f, args...)}
 		lst.errs = append(lst.errs, e)
 	}
 }
 
 // Len returns the number of errors in the list.
-func (lst *errList) Len() int {
+func (lst *ErrList) Len() int {
 	return len(lst.errs)
 }
 
 // Scan returns if there is an error for scanning.
-func (lst *errList) Scan() bool {
+func (lst *ErrList) Scan() bool {
 	if lst.scanned {
 		lst.scanPtr++
 	} else {
@@ -66,7 +52,7 @@ func (lst *errList) Scan() bool {
 
 // Error returns the current scaned error.
 // It returns nil for invalid operations.
-func (lst *errList) Error() *Error {
+func (lst *ErrList) Error() *Error {
 	if lst.hold == nil {
 		panic("invalid operation")
 	}

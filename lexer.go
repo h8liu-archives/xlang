@@ -1,4 +1,4 @@
-package parser
+package xlang
 
 import (
 	"io"
@@ -12,7 +12,7 @@ type Lexer struct {
 	c    *cursor
 	last *Tok // last non-comment token
 	hold *Tok // the current token that the scanner points at
-	errs *errList
+	errs *ErrList
 
 	NoKeyword bool // do not convert idents to keywords
 }
@@ -22,7 +22,7 @@ type Lexer struct {
 func Lex(file string, r io.ReadCloser) *Lexer {
 	ret := new(Lexer)
 	ret.c = newCursor(file, r)
-	ret.errs = newErrList()
+	ret.errs = NewErrList()
 
 	return ret
 }
@@ -35,7 +35,7 @@ func (lex *Lexer) emitTok(t *Tok) {
 }
 
 // Errors returns the lexing error list.
-func (lex *Lexer) Errors() ErrList {
+func (lex *Lexer) Errors() *ErrList {
 	return lex.errs
 }
 

@@ -1,4 +1,4 @@
-package parser
+package xlang
 
 // block, stmt and tokNode defines the internal memory representation
 // of a block, a statement and an entry

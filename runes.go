@@ -1,4 +1,4 @@
-package parser
+package xlang
 
 func isDigit(r rune) bool {
 	return r >= '0' && r <= '9'

@@ -1,4 +1,4 @@
-package parser
+package xlang
 
 var keywords = func() map[string]bool {
 	ret := make(map[string]bool)
