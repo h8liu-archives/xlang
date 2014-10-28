@@ -4,8 +4,11 @@ import (
 	"fmt"
 )
 
-const maxListError = 20
+// MaxListError is the maximum number of errors that an
+// error list can contain.
+const MaxListError = 20
 
+// ErrList is a list that stores up to 20 compiler errors.
 type ErrList struct {
 	errs    []*Error
 	scanned bool
@@ -13,6 +16,7 @@ type ErrList struct {
 	hold    *Error
 }
 
+// NewErrList creates an empty error list
 func NewErrList() *ErrList {
 	ret := new(ErrList)
 
@@ -22,7 +26,7 @@ func NewErrList() *ErrList {
 // Log appends an error to the error list.
 // It panics when error is nil.
 func (lst *ErrList) Log(p *Pos, f string, args ...interface{}) {
-	if len(lst.errs) < maxListError {
+	if len(lst.errs) < MaxListError {
 		e := &Error{p, fmt.Sprintf(f, args...)}
 		lst.errs = append(lst.errs, e)
 	}
@@ -58,4 +62,10 @@ func (lst *ErrList) Error() *Error {
 	}
 
 	return lst.hold
+}
+
+func singleErr(e error) *ErrList {
+	errs := NewErrList()
+	errs.Log(nil, e.Error())
+	return errs
 }

@@ -56,6 +56,8 @@ func (t Type) String() string {
 	return ret
 }
 
+// ShortStr returns the a shorter string value for the type,
+// a shorter version of what String() returns.
 func (t Type) ShortStr() string {
 	ret, found := typeShortStr[t]
 	if !found {

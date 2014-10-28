@@ -7,12 +7,6 @@ import (
 	"strings"
 )
 
-func singleErr(e error) *ErrList {
-	errs := NewErrList()
-	errs.Log(nil, e.Error())
-	return errs
-}
-
 type parser struct {
 	lex   *Lexer
 	block Block
@@ -89,9 +83,8 @@ func (p *parser) parseStmt() Stmt {
 	if ret == nil {
 		if p.lex.EOF() || endBlockToken(p.lex.Token()) {
 			return nil
-		} else {
-			return make(Stmt, 0)
 		}
+		return make(Stmt, 0)
 	}
 
 	return ret
