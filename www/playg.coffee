@@ -61,6 +61,7 @@ updateTokens = ->
     $("#tokens").html(tokens)
     parsed = xlang.parse("test.x", code)
     $("#console").html(parsed.errs)
+    $("#stmt-tree").html(parsed.block)
 
     return
 

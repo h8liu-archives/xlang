@@ -117,7 +117,7 @@ span.num {
 span.operator {
     color: #090;
 }
-span.implicit-semi {
+span.implicit-semi, span.brace, span.empty {
     color: #999;
 }
 span.comment {

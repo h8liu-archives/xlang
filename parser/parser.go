@@ -98,19 +98,32 @@ func (p *parser) parseStmt() Stmt {
 }
 
 func (p *parser) parseBlock() Block {
-	var b Block
+	var b = make(Block, 0, 8)
 	for {
 		s := p.parseStmt()
 		if s == nil {
 			break
 		}
 		b = append(b, s)
+
+		if p.lex.EOF() || endBlockToken(p.lex.Token()) {
+			break
+		}
 	}
 	return b
 }
 
 func (p *parser) parse() Block {
-	return p.parseBlock()
+	ret := p.parseBlock()
+	if !p.lex.EOF() {
+		t := p.lex.Token()
+		if !endBlockToken(t) {
+			panic("bug")
+		}
+
+		p.errs.Log(t.Pos, "unmatched }")
+	}
+	return ret
 }
 
 // Parse parses a file from the input stream.

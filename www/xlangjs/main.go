@@ -27,23 +27,6 @@ func main() {
 	})
 }
 
-func _parse(file, code string) (block, errs string) {
-	_, es := parser.ParseStr(file, code)
-	if es != nil {
-		buf := new(bytes.Buffer)
-
-		for es.Scan() {
-			fmt.Fprintf(buf, `<div class="error">%s</div>`,
-				template.HTMLEscapeString(es.Error().String()),
-			)
-		}
-
-		return "", buf.String()
-	}
-
-	return "", ""
-}
-
 func parse(file, code string) map[string]interface{} {
 	ret := make(map[string]interface{})
 	block, errs := _parse(file, code)
@@ -51,6 +34,27 @@ func parse(file, code string) map[string]interface{} {
 	ret["errs"] = errs
 
 	return ret
+}
+
+func tokenClass(t *parser.Tok) string {
+	if t.Lit == "\n" && t.Type == parser.TypeOperator {
+		return "implicit-semi"
+	}
+
+	switch t.Type {
+	case parser.TypeIdent:
+		return "ident"
+	case parser.TypeInt, parser.TypeFloat:
+		return "num"
+	case parser.TypeOperator:
+		return "operator"
+	case parser.TypeKeyword:
+		return "keyword"
+	case parser.TypeComment:
+		return "comment"
+	}
+
+	return "na"
 }
 
 func parseTokens(file, code string) string {
@@ -74,24 +78,7 @@ func parseTokens(file, code string) string {
 			tok := toks[index]
 			if tok != nil {
 				curTok = tok
-				class := "na"
-
-				switch tok.Type {
-				case parser.TypeIdent:
-					class = "ident"
-				case parser.TypeInt, parser.TypeFloat:
-					class = "num"
-				case parser.TypeOperator:
-					class = "operator"
-				case parser.TypeKeyword:
-					class = "keyword"
-				case parser.TypeComment:
-					class = "comment"
-				}
-
-				if tok.Lit == "\n" && tok.Type == parser.TypeOperator {
-					class = "implicit-semi"
-				}
+				class := tokenClass(tok)
 
 				fmt.Fprintf(out, `<span class="%s">`, class)
 
@@ -142,4 +129,67 @@ func parseTokens(file, code string) string {
 	}
 
 	return out.String()
+}
+
+func _parse(file, code string) (block, errs string) {
+	var ident = 0
+	var printStmt func(s parser.Stmt)
+	out := new(bytes.Buffer)
+	errOut := new(bytes.Buffer)
+
+	printIdent := func() {
+		for i := 0; i < ident; i++ {
+			fmt.Fprint(out, "&nbsp;&nbsp;&nbsp;&nbsp;")
+		}
+	}
+
+	printBlock := func(b parser.Block) {
+		fmt.Fprintf(out, `<span class="brace">{</span><br/>`+"\n")
+		ident++
+
+		for _, stmt := range b {
+			printStmt(stmt)
+		}
+
+		ident--
+		printIdent()
+		fmt.Fprintf(out, `<span class="brace">}</span> `)
+	}
+
+	printStmt = func(s parser.Stmt) {
+		printIdent()
+
+		if len(s) == 0 {
+			fmt.Fprintf(out, `<span class="empty">empty</span>`)
+		} else {
+			for _, e := range s {
+				if e.Block != nil {
+					printBlock(e.Block)
+				} else {
+					t := e.Tok
+					class := tokenClass(t)
+
+					fmt.Fprintf(out, `<span class="%s">%s</span> `,
+						class, template.HTMLEscapeString(t.Lit),
+					)
+				}
+			}
+		}
+
+		fmt.Fprintf(out, `<br/>`+"\n")
+	}
+
+	b, es := parser.ParseStr(file, code)
+	if es != nil {
+		for es.Scan() {
+			fmt.Fprintf(errOut, `<div class="error">%s</div>`,
+				template.HTMLEscapeString(es.Error().String()),
+			)
+		}
+
+		return "", errOut.String()
+	}
+
+	printBlock(b)
+	return out.String(), ""
 }
