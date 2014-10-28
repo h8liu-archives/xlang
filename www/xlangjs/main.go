@@ -160,7 +160,7 @@ func _parse(file, code string) (block, errs string) {
 		printIdent()
 
 		if len(s) == 0 {
-			fmt.Fprintf(out, `<span class="empty">empty</span>`)
+			fmt.Fprintf(out, `<span class="empty">(empty statement)</span>`)
 		} else {
 			for _, e := range s {
 				if e.Block != nil {
