@@ -39,3 +39,24 @@ type Source struct {
 func (s *Source) Compile() (*Object, *ErrList) {
 	return nil, nil
 }
+
+// CompileFunc treats the file as the body of the main function.
+// It equivalent as wrapping the body inside a `func main() { }`.
+func (s *Source) CompileFunc() (*Object, *ErrList) {
+	block, errs := Parse(s.File, s.Reader)
+	if errs != nil {
+		return nil, errs
+	}
+
+	tree := newAST()
+	for _, s := range block {
+		tree.addStmt(s)
+	}
+
+	tree.buildFunc()
+
+	return nil, nil // TODO
+}
+
+func buildAST(b Block) {
+}
