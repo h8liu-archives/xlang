@@ -122,6 +122,10 @@ func (p *parser) parse() Block {
 		}
 
 		p.errs.Log(t.Pos, "unmatched }")
+
+		for p.lex.Scan() {
+			// eat up the rest of the tokens
+		}
 	}
 	return ret
 }
