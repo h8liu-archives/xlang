@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/h8liu/xlang"
+	"github.com/h8liu/xlang/parser"
 )
 
 var ident = 0
@@ -14,7 +14,7 @@ func printIdent() {
 	}
 }
 
-func printBlock(b xlang.Block) {
+func printBlock(b parser.Block) {
 	fmt.Println("{")
 	ident++
 
@@ -27,7 +27,7 @@ func printBlock(b xlang.Block) {
 	fmt.Print("}")
 }
 
-func printStmt(s xlang.Stmt) {
+func printStmt(s parser.Stmt) {
 	printIdent()
 
 	if len(s) == 0 {
@@ -51,7 +51,7 @@ func printStmt(s xlang.Stmt) {
 }
 
 func main() {
-	block, errs := xlang.ParseStr("test.x", prog)
+	block, errs := parser.ParseStr("test.x", prog)
 	if errs != nil {
 		for errs.Scan() {
 			fmt.Println(errs.Error())

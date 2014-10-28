@@ -8,7 +8,7 @@ import (
 
 	"github.com/gopherjs/gopherjs/js"
 
-	"github.com/h8liu/xlang"
+	"github.com/h8liu/xlang/parser"
 )
 
 var code = `
@@ -36,21 +36,21 @@ func parse(file, code string) map[string]interface{} {
 	return ret
 }
 
-func tokenClass(t *xlang.Tok) string {
-	if t.Lit == "\n" && t.Type == xlang.TypeOperator {
+func tokenClass(t *parser.Tok) string {
+	if t.Lit == "\n" && t.Type == parser.TypeOperator {
 		return "implicit-semi"
 	}
 
 	switch t.Type {
-	case xlang.TypeIdent:
+	case parser.TypeIdent:
 		return "ident"
-	case xlang.TypeInt, xlang.TypeFloat:
+	case parser.TypeInt, parser.TypeFloat:
 		return "num"
-	case xlang.TypeOperator:
+	case parser.TypeOperator:
 		return "operator"
-	case xlang.TypeKeyword:
+	case parser.TypeKeyword:
 		return "keyword"
-	case xlang.TypeComment:
+	case parser.TypeComment:
 		return "comment"
 	}
 
@@ -58,17 +58,17 @@ func tokenClass(t *xlang.Tok) string {
 }
 
 func parseTokens(file, code string) string {
-	lex := xlang.LexStr(file, code)
+	lex := parser.LexStr(file, code)
 	out := new(bytes.Buffer)
 
 	lines := strings.Split(code, "\n")
-	toks := make(map[uint64]*xlang.Tok)
+	toks := make(map[uint64]*parser.Tok)
 	for lex.Scan() {
 		t := lex.Token()
 		toks[(uint64(t.Row)<<32)+uint64(t.Col)] = t
 	}
 
-	var curTok *xlang.Tok
+	var curTok *parser.Tok
 	var curPos int
 	var curLit []rune
 
@@ -133,7 +133,7 @@ func parseTokens(file, code string) string {
 
 func _parse(file, code string) (block, errs string) {
 	var ident = 0
-	var printStmt func(s xlang.Stmt)
+	var printStmt func(s parser.Stmt)
 	out := new(bytes.Buffer)
 	errOut := new(bytes.Buffer)
 
@@ -143,7 +143,7 @@ func _parse(file, code string) (block, errs string) {
 		}
 	}
 
-	printBlock := func(b xlang.Block) {
+	printBlock := func(b parser.Block) {
 		fmt.Fprintf(out, `<span class="brace">{</span><br/>`+"\n")
 		ident++
 
@@ -156,7 +156,7 @@ func _parse(file, code string) (block, errs string) {
 		fmt.Fprintf(out, `<span class="brace">}</span> `)
 	}
 
-	printStmt = func(s xlang.Stmt) {
+	printStmt = func(s parser.Stmt) {
 		printIdent()
 
 		if len(s) == 0 {
@@ -179,7 +179,7 @@ func _parse(file, code string) (block, errs string) {
 		fmt.Fprintf(out, `<br/>`+"\n")
 	}
 
-	b, es := xlang.ParseStr(file, code)
+	b, es := parser.ParseStr(file, code)
 	if es != nil {
 		for es.Scan() {
 			fmt.Fprintf(errOut, `<div class="error">%s</div>`,

@@ -1,4 +1,4 @@
-package xlang
+package parser
 
 import (
 	"fmt"

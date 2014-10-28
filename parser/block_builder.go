@@ -1,4 +1,4 @@
-package xlang
+package parser
 
 // blockBuilder defines the interface to build a block
 //

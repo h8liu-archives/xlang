@@ -1,7 +1,9 @@
-package xlang
+package xc
 
 import (
 	"io"
+
+	"github.com/h8liu/xlang/parser"
 )
 
 // Header defines all the constants and symbols.
@@ -36,14 +38,14 @@ type Source struct {
 }
 
 // Compile compiles a source file into an object or report the errors.
-func (s *Source) Compile() (*Object, *ErrList) {
+func (s *Source) Compile() (*Object, *parser.ErrList) {
 	return nil, nil
 }
 
 // CompileFunc treats the file as the body of the main function.
 // It equivalent as wrapping the body inside a `func main() { }`.
-func (s *Source) CompileFunc() (*Object, *ErrList) {
-	block, errs := Parse(s.File, s.Reader)
+func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
+	block, errs := parser.Parse(s.File, s.Reader)
 	if errs != nil {
 		return nil, errs
 	}
@@ -58,5 +60,5 @@ func (s *Source) CompileFunc() (*Object, *ErrList) {
 	return nil, nil // TODO
 }
 
-func buildAST(b Block) {
+func buildAST(b parser.Block) {
 }
