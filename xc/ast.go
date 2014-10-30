@@ -43,18 +43,16 @@ func (ast *AST) addStmt(b *ASTBlock, s parser.Stmt) {
 
 	ast.s = parser.NewEntryScanner(s)
 
-	if ast.s.IsBlock() {
+	if ast.s.SeeBlock() {
 		panic("todo: parsing a block statement")
-	} else {
-		if ast.s.See(parser.TypeKeyword) {
-			t := ast.s.Tok()
-			if t.Lit == "var" {
-				// parsing var
-			}
-		} else {
-			// parsing left hand expression
-			_ = ast.parseExpr()
+	} else if ast.s.See(parser.TypeKeyword) {
+		t := ast.s.Tok()
+		if t.Lit == "var" {
+			// parsing var
 		}
+	} else {
+		// parsing left hand expression
+		_ = ast.parseExpr()
 	}
 }
 
