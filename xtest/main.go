@@ -52,7 +52,7 @@ func printStmt(s parser.Stmt) {
 }
 
 func main() {
-	src := xc.NewStrSource("text.xpr", prog)
+	src := xc.NewStrSource("test.xpr", prog)
 	b, errs := src.BuildExprsAST()
 	if errs != nil {
 		for errs.Scan() {
