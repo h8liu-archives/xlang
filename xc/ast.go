@@ -7,7 +7,7 @@ import (
 // ASTNode basically could be anything
 type ASTNode interface{}
 
-// ASTBlock presents the xlang abstract syntax tree.
+// AST presents the xlang abstract syntax tree.
 type AST struct {
 	errs *parser.ErrList
 	s    *parser.EntryScanner

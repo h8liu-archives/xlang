@@ -6,6 +6,7 @@ import (
 	"github.com/h8liu/xlang/parser"
 )
 
+// ASTOpExpr describes an expression with a binary operation.
 type ASTOpExpr struct {
 	A  ASTNode // when A is nil, it is a unary expr
 	Op string
