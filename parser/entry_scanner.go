@@ -85,7 +85,7 @@ func (s *EntryScanner) Tok() *Tok {
 	return entry.Tok
 }
 
-// IsBlock returns true if the current entry is a block.
+// SeeBlock returns true if the current entry is a block.
 func (s *EntryScanner) SeeBlock() bool {
 	entry := s.Entry()
 	if entry == nil {
