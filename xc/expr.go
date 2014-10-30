@@ -9,7 +9,7 @@ import (
 // ASTOpExpr describes an expression with a binary operation.
 type ASTOpExpr struct {
 	A  ASTNode // when A is nil, it is a unary expr
-	Op string
+	Op *parser.Tok
 	B  ASTNode
 }
 
@@ -26,7 +26,7 @@ func (ast *AST) parseUnaryExpr() ASTNode {
 			return nil
 		}
 
-		return &ASTOpExpr{Op: tok.Lit, B: x}
+		return &ASTOpExpr{Op: tok, B: x}
 	}
 
 	return ast.parsePrimaryExpr()
@@ -42,7 +42,7 @@ func (ast *AST) parseBinaryExpr() ASTNode {
 		tok := ast.s.Accept()
 		bop := new(ASTOpExpr)
 		bop.A = ret
-		bop.Op = tok.Lit
+		bop.Op = tok
 		bop.B = ast.parseBinaryExpr()
 		ret = bop
 	}
