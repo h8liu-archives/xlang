@@ -20,7 +20,7 @@ type ASTBlock struct {
 	nodes []ASTNode
 }
 
-func newBlockAST(b parser.Block) *AST {
+func newBlockAST(b *parser.Block) *AST {
 	ret := new(AST)
 	ret.errs = parser.NewErrList()
 	root := new(ASTBlock)
@@ -30,8 +30,8 @@ func newBlockAST(b parser.Block) *AST {
 	return ret
 }
 
-func (ast *AST) parseBlock(ret *ASTBlock, b parser.Block) {
-	for _, s := range b {
+func (ast *AST) parseBlock(ret *ASTBlock, b *parser.Block) {
+	for _, s := range b.Stmts {
 		ast.addStmt(ret, s)
 	}
 }

@@ -14,11 +14,11 @@ func printIdent() {
 	}
 }
 
-func printBlock(b parser.Block) {
+func printBlock(b *parser.Block) {
 	fmt.Println("{")
 	ident++
 
-	for _, stmt := range b {
+	for _, stmt := range b.Stmts {
 		printStmt(stmt)
 	}
 

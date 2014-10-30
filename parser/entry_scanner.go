@@ -48,7 +48,12 @@ func (s *EntryScanner) IsBlock() bool {
 	panic("todo")
 }
 
+// Pos returns the pos
 func (s *EntryScanner) Pos() *Pos {
+	if s.IsBlock() {
+		panic("todo")
+	}
+
 	t := s.Tok()
 	if t != nil {
 		return t.Pos

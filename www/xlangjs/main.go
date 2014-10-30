@@ -143,11 +143,11 @@ func _parse(file, code string) (block, errs string) {
 		}
 	}
 
-	printBlock := func(b parser.Block) {
+	printBlock := func(b *parser.Block) {
 		fmt.Fprintf(out, `<span class="brace">{</span><br/>`+"\n")
 		ident++
 
-		for _, stmt := range b {
+		for _, stmt := range b.Stmts {
 			printStmt(stmt)
 		}
 

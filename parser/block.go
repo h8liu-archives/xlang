@@ -4,7 +4,11 @@ package parser
 // of a block, a statement and an entry
 
 // Block defines a series of statements
-type Block []Stmt
+type Block struct {
+	Lbrace *Tok
+	Rbrace *Tok
+	Stmts  []Stmt
+}
 
 // Stmt defines a series of token entries
 type Stmt []*Entry
@@ -12,5 +16,5 @@ type Stmt []*Entry
 // Entry defines a token entry, which could be a single token or a block
 type Entry struct {
 	Tok   *Tok
-	Block Block
+	Block *Block
 }

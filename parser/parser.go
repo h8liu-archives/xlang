@@ -56,10 +56,13 @@ func (p *parser) parseEntry() *Entry {
 
 	if startBlockToken(t) {
 		b := p.parseBlock()
+		b.Lbrace = t
 
 		if p.lex.EOF() && !p.eofErrored {
 			p.errs.Log(p.lex.Pos(), "unexpected EOF")
 			p.eofErrored = true
+		} else {
+			b.Rbrace = p.lex.Token()
 		}
 
 		return &Entry{Block: b}
@@ -90,14 +93,14 @@ func (p *parser) parseStmt() Stmt {
 	return ret
 }
 
-func (p *parser) parseBlock() Block {
-	var b = make(Block, 0, 8)
+func (p *parser) parseBlock() *Block {
+	var b = new(Block)
 	for {
 		s := p.parseStmt()
 		if s == nil {
 			break
 		}
-		b = append(b, s)
+		b.Stmts = append(b.Stmts, s)
 
 		if p.lex.EOF() || endBlockToken(p.lex.Token()) {
 			break
@@ -106,7 +109,7 @@ func (p *parser) parseBlock() Block {
 	return b
 }
 
-func (p *parser) parse() Block {
+func (p *parser) parse() *Block {
 	ret := p.parseBlock()
 	if !p.lex.EOF() {
 		t := p.lex.Token()
@@ -124,7 +127,7 @@ func (p *parser) parse() Block {
 }
 
 // Parse parses a file from the input stream.
-func Parse(file string, r io.ReadCloser) (Block, *ErrList) {
+func Parse(file string, r io.ReadCloser) (*Block, *ErrList) {
 	lex := Lex(file, r)
 	p := newParser(lex)
 	ret := p.parse()
@@ -147,7 +150,7 @@ func Parse(file string, r io.ReadCloser) (Block, *ErrList) {
 }
 
 // ParseFile parses a file (on the file system).
-func ParseFile(path string) (Block, *ErrList) {
+func ParseFile(path string) (*Block, *ErrList) {
 	f, e := os.Open(path)
 	if e != nil {
 		return nil, singleErr(e)
@@ -157,7 +160,7 @@ func ParseFile(path string) (Block, *ErrList) {
 }
 
 // ParseStr parse a file from a string.
-func ParseStr(file, s string) (Block, *ErrList) {
+func ParseStr(file, s string) (*Block, *ErrList) {
 	r := ioutil.NopCloser(strings.NewReader(s))
 	return Parse(file, r)
 }
