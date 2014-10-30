@@ -50,11 +50,7 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 		return nil, errs
 	}
 
-	tree := newAST()
-	for _, s := range block {
-		tree.addStmt(s)
-	}
-
+	tree := newBlockAST(block)
 	tree.buildFunc()
 
 	return nil, nil // TODO

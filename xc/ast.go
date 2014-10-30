@@ -4,17 +4,37 @@ import (
 	"github.com/h8liu/xlang/parser"
 )
 
-// AST presents the xlang abstract syntax tree.
+// ASTNode basically could be anything
+type ASTNode interface{}
+
+// ASTBlock presents the xlang abstract syntax tree.
 type AST struct {
-	nodes interface{}
+	errs *parser.ErrList
+	root ASTNode
 }
 
-func newAST() *AST {
+// ASTBlock is a scoped block
+type ASTBlock struct {
+	nodes []ASTNode
+}
+
+func newBlockAST(b parser.Block) *AST {
 	ret := new(AST)
+	ret.errs = parser.NewErrList()
+	root := new(ASTBlock)
+	ret.parseBlock(root, b)
+	ret.root = root
+
 	return ret
 }
 
-func (ast *AST) addStmt(s parser.Stmt) {
+func (ast *AST) parseBlock(ret *ASTBlock, b parser.Block) {
+	for _, s := range b {
+		ast.addStmt(ret, s)
+	}
+}
+
+func (ast *AST) addStmt(b *ASTBlock, s parser.Stmt) {
 	if len(s) == 0 {
 		return // empty statement
 	}
@@ -40,4 +60,5 @@ func (ast *AST) addStmt(s parser.Stmt) {
 }
 
 func (ast *AST) buildFunc() {
+
 }
