@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/h8liu/xlang/parser"
+	"github.com/h8liu/xlang/xc"
 )
 
 var ident = 0
@@ -51,13 +52,15 @@ func printStmt(s parser.Stmt) {
 }
 
 func main() {
-	block, errs := parser.ParseStr("test.x", prog)
+	src := xc.NewStrSource("text.xpr", prog)
+	b, errs := src.BuildExprsAST()
 	if errs != nil {
 		for errs.Scan() {
 			fmt.Println(errs.Error())
 		}
 	} else {
-		printBlock(block)
-		fmt.Println()
+		for _, n := range b.Nodes {
+			fmt.Println(xc.ExprStr(n))
+		}
 	}
 }

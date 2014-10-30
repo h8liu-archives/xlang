@@ -1,9 +1,6 @@
 package xc
 
 import (
-	"bytes"
-	"fmt"
-
 	"github.com/h8liu/xlang/parser"
 )
 
@@ -18,24 +15,62 @@ type AST struct {
 	root ASTNode
 }
 
-// ASTBlock is a scoped block
+// ASTBlock is a scoped block.
 type ASTBlock struct {
-	nodes []ASTNode
+	Nodes []ASTNode
 }
 
-func newBlockAST(b *parser.Block) *AST {
+// ASTModule is a module that consists of top-level declarations.
+type ASTModule struct {
+}
+
+func newAST() *AST {
 	ret := new(AST)
 	ret.errs = parser.NewErrList()
+	return ret
+}
+
+func newStmtsAST(b *parser.Block) *AST {
+	ret := newAST()
 	root := new(ASTBlock)
-	ret.parseBlock(root, b)
+	ret.parseStmts(root, b)
 	ret.root = root
 
 	return ret
 }
 
-func (ast *AST) parseBlock(ret *ASTBlock, b *parser.Block) {
+func newExprsAST(b *parser.Block) *AST {
+	ret := newAST()
+	root := new(ASTBlock)
+	ret.parseExprs(root, b)
+	ret.root = root
+	return ret
+}
+
+func (ast *AST) parseProg(ret *ASTModule, b *parser.Block) {
+	panic("todo")
+}
+
+func (ast *AST) parseStmts(ret *ASTBlock, b *parser.Block) {
 	for _, s := range b.Stmts {
 		ast.addStmt(ret, s)
+	}
+}
+
+func (ast *AST) parseExprs(ret *ASTBlock, b *parser.Block) {
+	for _, s := range b.Stmts {
+		if len(s) == 0 {
+			continue // empty expr
+		}
+
+		ast.s = parser.NewEntryScanner(s)
+		expr := ast.parseExpr()
+		if ast.s.Entry() != nil {
+			ast.errs.Log(ast.s.Pos(), "expression does not end cleanly")
+			continue
+		}
+
+		ret.Nodes = append(ret.Nodes, expr)
 	}
 }
 
@@ -61,27 +96,4 @@ func (ast *AST) addStmt(b *ASTBlock, s parser.Stmt) {
 
 func (ast *AST) buildFunc() {
 
-}
-
-// ExprStr returns the string representation of the expression.
-// It reflects the tree structure of the expression tree.
-func ExprStr(node ASTNode) string {
-	buf := new(bytes.Buffer)
-	printExpr(buf, node)
-	return buf.String()
-}
-
-func printExpr(buf *bytes.Buffer, node ASTNode) {
-	switch n := node.(type) {
-	case *ASTOpExpr:
-		fmt.Fprint(buf, "(")
-		if n.A != nil {
-			printExpr(buf, n.A)
-		}
-		fmt.Fprint(buf, n.Op.Lit)
-		fmt.Fprint(buf, n.B)
-		fmt.Fprint(buf, ")")
-	case *parser.Tok:
-		fmt.Fprint(buf, n.Lit)
-	}
 }

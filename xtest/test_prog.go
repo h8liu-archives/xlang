@@ -1,13 +1,13 @@
 package main
 
-/*
-const prog = `var x = 3
-var y = 4
-
-func main() {
-	println(x + y)
-}`
-
-*/
-
-const prog = `{ n }`
+const prog = `
+x + y
+3 + 4
+4 - 3 - 5
+(x)
+(x + (y + z))
+(x + y + z)
+((x + y) + z)
+((3))
+_5
+`

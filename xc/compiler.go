@@ -2,6 +2,8 @@ package xc
 
 import (
 	"io"
+	"io/ioutil"
+	"strings"
 
 	"github.com/h8liu/xlang/parser"
 )
@@ -37,6 +39,14 @@ type Source struct {
 	Lib *Lib // dependency library
 }
 
+// NewStrSource creates a source file from a string.
+func NewStrSource(f, s string) *Source {
+	return &Source{
+		File:   f,
+		Reader: ioutil.NopCloser(strings.NewReader(s)),
+	}
+}
+
 // Compile compiles a source file into an object or report the errors.
 func (s *Source) Compile() (*Object, *parser.ErrList) {
 	return nil, nil
@@ -50,11 +60,25 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 		return nil, errs
 	}
 
-	tree := newBlockAST(block)
+	tree := newStmtsAST(block)
 	tree.buildFunc()
 
 	return nil, nil // TODO
 }
 
-func buildAST(b parser.Block) {
+// BuildExprsAST builds the source as an .xpr file, where
+// each statement is an expression.
+// This is useful for testing expression parsing.
+func (s *Source) BuildExprsAST() (*ASTBlock, *parser.ErrList) {
+	block, errs := parser.Parse(s.File, s.Reader)
+	if errs != nil {
+		return nil, errs
+	}
+
+	ast := newExprsAST(block)
+	if ast.errs.Len() != 0 {
+		return nil, ast.errs
+	}
+
+	return ast.root.(*ASTBlock), nil
 }
