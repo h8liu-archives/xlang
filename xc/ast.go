@@ -10,6 +10,8 @@ type ASTNode interface{}
 // ASTBlock presents the xlang abstract syntax tree.
 type AST struct {
 	errs *parser.ErrList
+	s    *parser.EntryScanner
+
 	root ASTNode
 }
 
@@ -39,22 +41,19 @@ func (ast *AST) addStmt(b *ASTBlock, s parser.Stmt) {
 		return // empty statement
 	}
 
-	lead := s[0]
+	ast.s = parser.NewEntryScanner(s)
 
-	if lead.Block != nil {
+	if ast.s.IsBlock() {
 		panic("todo: parsing a block statement")
 	} else {
-		t := lead.Tok
-		if t == nil {
-			panic("empty entry")
-		}
-
-		if t.Type == parser.TypeKeyword {
+		if ast.s.See(parser.TypeKeyword) {
+			t := ast.s.Tok()
 			if t.Lit == "var" {
 				// parsing var
 			}
 		} else {
 			// parsing left hand expression
+			_ = ast.parseExpr()
 		}
 	}
 }

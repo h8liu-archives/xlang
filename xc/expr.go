@@ -1,6 +1,8 @@
 package xc
 
 import (
+	"fmt"
+
 	"github.com/h8liu/xlang/parser"
 )
 
@@ -10,15 +12,15 @@ type ASTOpExpr struct {
 	B  ASTNode
 }
 
-func (ast *AST) parsePrimaryExpr(s *EntryScanner) ASTNode {
+func (ast *AST) parsePrimaryExpr() ASTNode {
 	// might add more stuff here
-	return ast.parseOperand(s)
+	return ast.parseOperand()
 }
 
-func (ast *AST) parseUnaryExpr(s *EntryScanner) ASTNode {
-	if s.SeeOp("+", "-") {
-		tok := s.Accept()
-		x := ast.parseUnaryExpr(s)
+func (ast *AST) parseUnaryExpr() ASTNode {
+	if ast.s.SeeOp("+", "-") {
+		tok := ast.s.Accept()
+		x := ast.parseUnaryExpr()
 		if x == nil {
 			return nil
 		}
@@ -26,44 +28,53 @@ func (ast *AST) parseUnaryExpr(s *EntryScanner) ASTNode {
 		return &ASTOpExpr{Op: tok.Lit, B: x}
 	}
 
-	return ast.parsePrimaryExpr(s)
+	return ast.parsePrimaryExpr()
 }
 
-func (ast *AST) parseBinaryExpr(s *EntryScanner) ASTNode {
-	ret := ast.parseUnaryExpr(s)
+func (ast *AST) parseBinaryExpr() ASTNode {
+	ret := ast.parseUnaryExpr()
 	if ret == nil {
 		return nil // error encountered
 	}
 
-	for s.SeeOp("+", "-") {
-		tok := s.Accept()
+	for ast.s.SeeOp("+", "-") {
+		tok := ast.s.Accept()
 		bop := new(ASTOpExpr)
 		bop.A = ret
 		bop.Op = tok.Lit
-		bop.B = ast.parseBinaryExpr(s)
+		bop.B = ast.parseBinaryExpr()
 		ret = bop
 	}
 
 	return ret
 }
 
-func (ast *AST) parseOperand(s *EntryScanner) ASTNode {
-	if s.See(parser.TypeIdent, parser.TypeInt) {
-		return s.Accept()
-	} else if s.AcceptOp("(") {
-		ret := ast.parseBinaryExpr(s)
-		if !ast.expectOp(s, ")") {
+func (ast *AST) parseExpr() ASTNode {
+	return ast.parseBinaryExpr()
+}
+
+func (ast *AST) parseOperand() ASTNode {
+	if ast.s.See(parser.TypeIdent, parser.TypeInt) {
+		return ast.s.Accept()
+	} else if ast.s.AcceptOp("(") {
+		ret := ast.parseBinaryExpr()
+		if !ast.expectOp(")") {
 			return nil
 		}
 		return ret
 	}
 
-	ast.logErr(s.Tok().Pos, "expect an operand")
+	ast.logErr(ast.s.Pos(), "expect an operand")
 	return nil
 }
 
-func (ast *AST) expectOp(s *EntryScanner, op string) bool {
-	panic("todo")
+func (ast *AST) expectOp(op string) bool {
+	if ast.s.AcceptOp(op) {
+		return true
+	}
+
+	ast.errs.Log(ast.s.Pos(), fmt.Sprintf("expect operator '%s'", op))
+	return false
 }
 
 func (ast *AST) logErr(pos *parser.Pos, s string) {
