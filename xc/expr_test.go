@@ -44,7 +44,7 @@ func TestExpr(t *testing.T) {
 	o("(((a)))", "a")
 	o("a-b-c", "((a-b)-c)")
 	o("a-(b-c)", "(a-(b-c))")
-	o("_3")
+	o("_3", "_3")
 
 	e("/*")
 	e("(")
