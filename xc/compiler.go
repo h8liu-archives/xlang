@@ -60,13 +60,17 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 		return nil, errs
 	}
 
-	tree := newStmtsAST(block)
-	tree.buildFunc()
+	ast := newStmtsAST(block)
+	if ast.errs.Len() != 0 {
+		return nil, ast.errs
+	}
+
+	ast.buildFunc()
 
 	return nil, nil // TODO
 }
 
-// BuildExprsAST builds the source as an .xpr file, where
+// BuildExprsAST builds the source as an .xexpr file, where
 // each statement is an expression.
 // This is useful for testing expression parsing.
 func (s *Source) BuildExprsAST() (*ASTBlock, *parser.ErrList) {
@@ -76,6 +80,22 @@ func (s *Source) BuildExprsAST() (*ASTBlock, *parser.ErrList) {
 	}
 
 	ast := newExprsAST(block)
+	if ast.errs.Len() != 0 {
+		return nil, ast.errs
+	}
+
+	return ast.root.(*ASTBlock), nil
+}
+
+// BuildStmtsAST builds the source as an .xstmt file, where
+// the file works like a function body.
+func (s *Source) BuildStmtsAST() (*ASTBlock, *parser.ErrList) {
+	block, errs := parser.Parse(s.File, s.Reader)
+	if errs != nil {
+		return nil, errs
+	}
+
+	ast := newStmtsAST(block)
 	if ast.errs.Len() != 0 {
 		return nil, ast.errs
 	}

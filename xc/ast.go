@@ -53,7 +53,18 @@ func (ast *AST) parseProg(ret *ASTModule, b *parser.Block) {
 
 func (ast *AST) parseStmts(ret *ASTBlock, b *parser.Block) {
 	for _, s := range b.Stmts {
-		ast.addStmt(ret, s)
+		if len(s) == 0 {
+			continue // empty statement
+		}
+
+		ast.s = parser.NewEntryScanner(s)
+		expr := ast.parseStmt()
+		if ast.s.Entry() != nil {
+			ast.errs.Log(ast.s.Pos(), "expect end of statement")
+			continue
+		}
+
+		ret.Nodes = append(ret.Nodes, expr)
 	}
 }
 
@@ -66,7 +77,7 @@ func (ast *AST) parseExprs(ret *ASTBlock, b *parser.Block) {
 		ast.s = parser.NewEntryScanner(s)
 		expr := ast.parseExpr()
 		if ast.s.Entry() != nil {
-			ast.errs.Log(ast.s.Pos(), "expression does not end cleanly")
+			ast.errs.Log(ast.s.Pos(), "expect end of statement")
 			continue
 		}
 
@@ -74,26 +85,6 @@ func (ast *AST) parseExprs(ret *ASTBlock, b *parser.Block) {
 	}
 }
 
-func (ast *AST) addStmt(b *ASTBlock, s parser.Stmt) {
-	if len(s) == 0 {
-		return // empty statement
-	}
-
-	ast.s = parser.NewEntryScanner(s)
-
-	if ast.s.SeeBlock() {
-		panic("todo: parsing a block statement")
-	} else if ast.s.See(parser.TypeKeyword) {
-		t := ast.s.Tok()
-		if t.Lit == "var" {
-			// parsing var
-		}
-	} else {
-		// parsing left hand expression
-		_ = ast.parseExpr()
-	}
-}
-
 func (ast *AST) buildFunc() {
-
+	panic("todo")
 }

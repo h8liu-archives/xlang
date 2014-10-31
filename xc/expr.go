@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/h8liu/xlang/parser"
+	"github.com/h8liu/xlang/prt"
 )
 
 // ASTInfo is just a generic slot for storing syntax info.
@@ -147,33 +148,42 @@ func (ast *AST) logErr(pos *parser.Pos, s string) {
 // It reflects the tree structure of the expression tree.
 func ExprStr(node ASTNode) string {
 	buf := new(bytes.Buffer)
-	printExpr(buf, node)
+	p := prt.New(buf)
+	PrintExpr(p, node)
 	return buf.String()
 }
 
-func printExpr(buf *bytes.Buffer, node ASTNode) {
+func printExprList(p *prt.Printer, lst []ASTNode) {
+	for i, para := range lst {
+		if i != 0 {
+			p.Print(", ")
+		}
+		PrintExpr(p, para)
+	}
+}
+
+// PrintExpr prints the expression with the printer.
+func PrintExpr(p *prt.Printer, node ASTNode) {
 	switch n := node.(type) {
 	case *ASTOpExpr:
-		fmt.Fprint(buf, "(")
+		p.Print("(")
 		if n.A != nil {
-			printExpr(buf, n.A)
+			PrintExpr(p, n.A)
 		}
-		fmt.Fprint(buf, n.Op.Lit)
-		printExpr(buf, n.B)
-		fmt.Fprint(buf, ")")
+		p.Print(n.Op.Lit)
+		PrintExpr(p, n.B)
+		p.Print(")")
+
 	case *ASTCall:
-		printExpr(buf, n.Func)
-		fmt.Fprint(buf, "(")
-		for i, p := range n.Paras {
-			if i != 0 {
-				fmt.Fprint(buf, ",")
-			}
-			printExpr(buf, p)
-		}
-		fmt.Fprint(buf, ")")
+		PrintExpr(p, n.Func)
+		p.Print("(")
+		printExprList(p, n.Paras)
+		p.Print(")")
+
 	case *parser.Tok:
-		fmt.Fprint(buf, n.Lit)
+		p.Print(n.Lit)
+
 	default:
-		fmt.Fprint(buf, "(not-a-expr)")
+		p.Print("(not-a-expr)")
 	}
 }
