@@ -7,16 +7,22 @@ import (
 	"github.com/h8liu/xlang/parser"
 )
 
+type ASTInfo interface{}
+
 // ASTOpExpr describes an expression with a binary operation.
 type ASTOpExpr struct {
 	A  ASTNode // when A is nil, it is a unary expr
 	Op *parser.Tok
 	B  ASTNode
+
+	Info ASTInfo
 }
 
 type ASTCall struct {
 	Func  ASTNode
 	Paras []ASTNode
+
+	Info ASTInfo
 }
 
 func (ast *AST) parsePrimaryExpr() ASTNode {
@@ -24,11 +30,18 @@ func (ast *AST) parsePrimaryExpr() ASTNode {
 
 	for {
 		if ast.s.AcceptOp("(") {
+			if ast.s.AcceptOp(")") {
+				ret = &ASTCall{
+					Func:  ret,
+					Paras: make([]ASTNode, 0),
+				}
+				continue
+			}
+
 			lst := ast.parseExprList()
 			if lst == nil {
 				return nil
 			}
-
 			ret = &ASTCall{
 				Func:  ret,
 				Paras: lst,
@@ -37,6 +50,7 @@ func (ast *AST) parsePrimaryExpr() ASTNode {
 				return nil
 			}
 		} else {
+			// done with all those suffixes
 			break
 		}
 	}
@@ -44,10 +58,6 @@ func (ast *AST) parsePrimaryExpr() ASTNode {
 }
 
 func (ast *AST) parseExprList() []ASTNode {
-	if ast.s.SeeOp(")") {
-		return make([]ASTNode, 0)
-	}
-
 	ret := make([]ASTNode, 0, 8)
 	for {
 		expr := ast.parseExpr()
