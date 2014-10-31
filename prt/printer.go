@@ -16,9 +16,9 @@ type Printer struct {
 	Shift  int
 	Writer io.Writer
 	Error  error
-}
 
-var _ Iface = new(Printer)
+	lineStarted bool
+}
 
 // New creates a new printer that writes to w.
 // If w is nil, all prints to the printer will be noops.
@@ -56,6 +56,7 @@ func (p *Printer) pln(n *int, a ...interface{}) {
 	i, e := fmt.Fprintln(p.Writer, a...)
 	p.Error = e
 	*n += i
+	p.lineStarted = false
 }
 
 func (p *Printer) pf(n *int, format string, a ...interface{}) {
@@ -68,7 +69,11 @@ func (p *Printer) pf(n *int, format string, a ...interface{}) {
 	*n += i
 }
 
-func (p *Printer) pre(n *int) {
+func (p *Printer) newLine(n *int) {
+	if p.lineStarted {
+		return
+	}
+
 	p.p(n, p.Prefix)
 	for i := 0; i < p.Shift; i++ {
 		p.p(n, p.Indent)
@@ -78,9 +83,8 @@ func (p *Printer) pre(n *int) {
 // Print prints a line of args using fmt.Print
 func (p *Printer) Print(a ...interface{}) (int, error) {
 	n := 0
-	p.pre(&n)
+	p.newLine(&n)
 	p.p(&n, a...)
-	p.pln(&n)
 
 	return n, p.Error
 }
@@ -88,7 +92,7 @@ func (p *Printer) Print(a ...interface{}) (int, error) {
 // Println prints a line of args using fmt.Println
 func (p *Printer) Println(a ...interface{}) (int, error) {
 	n := 0
-	p.pre(&n)
+	p.newLine(&n)
 	p.pln(&n, a...)
 
 	return n, p.Error
@@ -97,9 +101,8 @@ func (p *Printer) Println(a ...interface{}) (int, error) {
 // Printf prints a line of formatted args using fmt.Printf
 func (p *Printer) Printf(format string, a ...interface{}) (int, error) {
 	n := 0
-	p.pre(&n)
+	p.newLine(&n)
 	p.pf(&n, format, a...)
-	p.pln(&n)
 
 	return n, p.Error
 }

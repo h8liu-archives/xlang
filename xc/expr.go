@@ -156,7 +156,7 @@ func ExprStr(node ASTNode) string {
 func printExprList(p *prt.Printer, lst []ASTNode) {
 	for i, para := range lst {
 		if i != 0 {
-			p.Print(", ")
+			p.Print(",")
 		}
 		PrintExpr(p, para)
 	}
