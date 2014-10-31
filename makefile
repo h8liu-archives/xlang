@@ -29,5 +29,5 @@ asmt:
 	make -C asm/tests --no-print-directory
 
 lint:
-	golint `find . -name "*.go"`
+	golint ./...
 

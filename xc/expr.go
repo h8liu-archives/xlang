@@ -7,6 +7,7 @@ import (
 	"github.com/h8liu/xlang/parser"
 )
 
+// ASTInfo is just a generic slot for storing syntax info.
 type ASTInfo interface{}
 
 // ASTOpExpr describes an expression with a binary operation.
@@ -18,6 +19,7 @@ type ASTOpExpr struct {
 	Info ASTInfo
 }
 
+// ASTCall describes a function call.
 type ASTCall struct {
 	Func  ASTNode
 	Paras []ASTNode

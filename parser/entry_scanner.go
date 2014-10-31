@@ -126,9 +126,8 @@ func (s *EntryScanner) Pos() *Pos {
 	if entry != nil {
 		if entry.Block != nil {
 			return entry.Block.Lbrace.Pos
-		} else {
-			return entry.Tok.Pos
 		}
+		return entry.Tok.Pos
 	}
 	if s.last != nil {
 		return s.last.Pos
