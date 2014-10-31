@@ -140,6 +140,10 @@ func (ast *AST) expectOp(op string) bool {
 	return false
 }
 
+func (ast *AST) logExpectIdent() {
+	ast.errs.Log(ast.s.Pos(), fmt.Sprintf("expect identifier"))
+}
+
 func (ast *AST) logErr(pos *parser.Pos, s string) {
 	ast.errs.Log(pos, s)
 }

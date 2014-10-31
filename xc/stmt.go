@@ -34,20 +34,25 @@ func (ast *AST) parseStmt() ASTNode {
 
 		// TODO: ident list
 		if !ast.s.SeeIdent() {
+			ast.logExpectIdent()
 			return nil
 		}
 		name := ast.s.Accept()
-		if !ast.expectOp("=") {
-			return nil
-		}
-		expr := ast.parseExpr()
-		if expr == nil {
-			return nil
+
+		if ast.s.AcceptOp("=") {
+			expr := ast.parseExpr()
+			if expr == nil {
+				return nil
+			}
+
+			return &ASTVarDecl{
+				Name: name,
+				Expr: expr,
+			}
 		}
 
 		return &ASTVarDecl{
 			Name: name,
-			Expr: expr,
 		}
 	} else {
 		exprs := ast.parseExprList()
@@ -80,7 +85,15 @@ func PrintStmt(p *prt.Printer, node ASTNode) {
 		p.Print(" = ")
 		printExprList(p, n.RHS)
 	case *ASTVarDecl:
-		p.Printf("var %s = ", n.Name.Lit)
-		PrintExpr(p, n.Expr)
+		if n.Expr == nil {
+			p.Printf("var %s", n.Name.Lit)
+		} else {
+			p.Printf("var %s = ", n.Name.Lit)
+			PrintExpr(p, n.Expr)
+		}
+	case *ASTExprStmt:
+		printExprList(p, n.Exprs)
+	default:
+		p.Print("/* invalid statement */")
 	}
 }

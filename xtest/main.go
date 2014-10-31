@@ -52,15 +52,15 @@ func printStmt(s parser.Stmt) {
 }
 
 func main() {
-	src := xc.NewStrSource("test.xpr", prog)
-	b, errs := src.BuildExprsAST()
+	src := xc.NewStrSource("test.x", prog)
+	b, errs := src.BuildStmtsAST()
 	if errs != nil {
 		for errs.Scan() {
 			fmt.Println(errs.Error())
 		}
 	} else {
 		for _, n := range b.Nodes {
-			fmt.Println(xc.ExprStr(n))
+			fmt.Println(xc.StmtStr(n))
 		}
 	}
 }
