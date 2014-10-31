@@ -11,12 +11,14 @@ import (
 type ASTVarDecl struct {
 	Name *parser.Tok
 	Expr ASTNode
+	Pos  *parser.Pos
 }
 
 // ASTAssign is an assignment statement.
 type ASTAssign struct {
 	LHS []ASTNode
 	RHS []ASTNode
+	Pos *parser.Pos
 }
 
 // ASTExprStmt is an expression statement.
@@ -40,6 +42,8 @@ func (ast *AST) parseStmt() ASTNode {
 		name := ast.s.Accept()
 
 		if ast.s.AcceptOp("=") {
+			p := ast.s.Pos()
+
 			expr := ast.parseExpr()
 			if expr == nil {
 				return nil
@@ -48,20 +52,24 @@ func (ast *AST) parseStmt() ASTNode {
 			return &ASTVarDecl{
 				Name: name,
 				Expr: expr,
+				Pos:  p,
 			}
 		}
 
 		return &ASTVarDecl{
 			Name: name,
+			Pos:  ast.s.Pos(),
 		}
 	} else {
 		exprs := ast.parseExprList()
 
 		if ast.s.AcceptOp("=") {
+			p := ast.s.Pos()
 			rhs := ast.parseExprList()
 			return &ASTAssign{
 				LHS: exprs,
 				RHS: rhs,
+				Pos: p,
 			}
 		}
 
