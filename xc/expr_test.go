@@ -33,6 +33,7 @@ func TestExpr(t *testing.T) {
 		}
 	}
 
+	// good expressions
 	o("3", "3")
 	o("3 // some comment", "3")
 	o("3+4", "(3+4)")
@@ -45,7 +46,13 @@ func TestExpr(t *testing.T) {
 	o("a-b-c", "((a-b)-c)")
 	o("a-(b-c)", "(a-(b-c))")
 	o("_3", "_3")
+	o("f()", "f()")
+	o("print(3, 4, 5)", "print(3,4,5)")
+	o("add(a, b, c)", "add(a,b,c)")
+	o("f()()()", "f()()()")
+	o("(f())()()", "f()()()")
 
+	// bad expressions
 	e("/*")
 	e("(")
 	e("3a")
@@ -54,4 +61,10 @@ func TestExpr(t *testing.T) {
 	e("3 a")
 	e("a b")
 	e("_ 3")
+	e("f(")
+	e("f)")
+	e("f())")
+	e("f(,)")
+	e("f(a,)")
+	e("f(,a)")
 }

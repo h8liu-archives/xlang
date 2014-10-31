@@ -63,11 +63,28 @@ func (s *EntryScanner) AcceptOp(op string) bool {
 	return true
 }
 
+func (s *EntryScanner) next() {
+	s.index++
+
+	if s.index >= len(s.s) {
+		if s.index > len(s.s) {
+			panic("EntryScanner over running")
+		}
+
+		entry := s.s[s.index-1]
+		if entry.Block != nil {
+			s.last = entry.Block.Lbrace
+		} else {
+			s.last = entry.Tok
+		}
+	}
+}
+
 // Accept returns and accepts the current token entry.
 // It panics if the current entry is a block.
 func (s *EntryScanner) Accept() *Tok {
 	ret := s.Tok()
-	s.index++
+	s.next()
 	return ret
 }
 
@@ -105,13 +122,13 @@ func (s *EntryScanner) Entry() *Entry {
 
 // Pos returns the pos
 func (s *EntryScanner) Pos() *Pos {
-	if s.SeeBlock() {
-		panic("todo")
-	}
-
-	t := s.Tok()
-	if t != nil {
-		return t.Pos
+	entry := s.Entry()
+	if entry != nil {
+		if entry.Block != nil {
+			return entry.Block.Lbrace.Pos
+		} else {
+			return entry.Tok.Pos
+		}
 	}
 	if s.last != nil {
 		return s.last.Pos

@@ -14,9 +14,55 @@ type ASTOpExpr struct {
 	B  ASTNode
 }
 
+type ASTCall struct {
+	Func  ASTNode
+	Paras []ASTNode
+}
+
 func (ast *AST) parsePrimaryExpr() ASTNode {
-	// might add more stuff here
-	return ast.parseOperand()
+	ret := ast.parseOperand()
+
+	for {
+		if ast.s.AcceptOp("(") {
+			lst := ast.parseExprList()
+			if lst == nil {
+				return nil
+			}
+
+			ret = &ASTCall{
+				Func:  ret,
+				Paras: lst,
+			}
+			if !ast.expectOp(")") {
+				return nil
+			}
+		} else {
+			break
+		}
+	}
+	return ret
+}
+
+func (ast *AST) parseExprList() []ASTNode {
+	if ast.s.SeeOp(")") {
+		return make([]ASTNode, 0)
+	}
+
+	ret := make([]ASTNode, 0, 8)
+	for {
+		expr := ast.parseExpr()
+		if expr == nil {
+			return nil
+		}
+
+		ret = append(ret, expr)
+
+		if !ast.s.AcceptOp(",") {
+			break
+		}
+	}
+
+	return ret
 }
 
 func (ast *AST) parseUnaryExpr() ASTNode {
@@ -102,6 +148,16 @@ func printExpr(buf *bytes.Buffer, node ASTNode) {
 		}
 		fmt.Fprint(buf, n.Op.Lit)
 		printExpr(buf, n.B)
+		fmt.Fprint(buf, ")")
+	case *ASTCall:
+		printExpr(buf, n.Func)
+		fmt.Fprint(buf, "(")
+		for i, p := range n.Paras {
+			if i != 0 {
+				fmt.Fprint(buf, ",")
+			}
+			printExpr(buf, p)
+		}
 		fmt.Fprint(buf, ")")
 	case *parser.Tok:
 		fmt.Fprint(buf, n.Lit)
