@@ -1,22 +1,35 @@
 package xc
 
-type nameIndex struct {
-	all map[string]interface{}
+import (
+	"github.com/h8liu/xlang/parser"
+)
+
+type symbol struct {
+	name string
+	pos  *parser.Pos
+	typ  *xtype
+	v    *enode
 }
 
-func (ind *nameIndex) put(name string, thing interface{}) bool {
-	if thing == nil {
+type nameIndex struct {
+	all map[string]*symbol
+}
+
+func (ind *nameIndex) put(s *symbol) bool {
+	if s == nil {
 		panic("cannot put nil")
 	}
+
+	name := s.name
 	_, found := ind.all[name]
 	if found {
 		return false
 	}
-	ind.all[name] = thing
+	ind.all[name] = s
 	return true
 }
 
-func (ind *nameIndex) find(name string) interface{} {
+func (ind *nameIndex) find(name string) *symbol {
 	return ind.all[name]
 }
 
@@ -50,12 +63,16 @@ func (s *scope) top() *nameIndex {
 	return s.stack[len(s.stack)-1]
 }
 
-func (s *scope) put(name string, thing interface{}) bool {
+func (s *scope) put(sym *symbol) bool {
 	top := s.top()
-	return top.put(name, thing)
+	return top.put(sym)
 }
 
-func (s *scope) find(name string) interface{} {
+func (s *scope) findTop(name string) *symbol {
+	return s.top().find(name)
+}
+
+func (s *scope) find(name string) *symbol {
 	n := len(s.stack)
 	for i := n - 1; i >= 0; i-- {
 		ind := s.stack[i]

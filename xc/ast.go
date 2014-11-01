@@ -14,6 +14,7 @@ type AST struct {
 
 	root  ASTNode
 	scope *scope
+	ir    *irBuilder
 	obj   *Object
 }
 
@@ -99,6 +100,100 @@ func (ast *AST) buildFunc() {
 	ast.scope.pop()
 }
 
-func (ast *AST) buildStmt(s ASTNode) {
+func (ast *AST) buildExpr(s ASTNode) *enode {
+	return nil
+}
 
+func (ast *AST) buildStmt(s ASTNode) {
+	switch n := s.(type) {
+	case *ASTAssign:
+		nleft := len(n.LHS)
+		nright := len(n.RHS)
+		if nleft != nright {
+			ast.errs.Log(n.Pos, "expect %d on left hand side, got %d",
+				nright, nleft,
+			)
+			return
+		}
+
+		var temps []*enode
+		for _, expr := range n.RHS {
+			t := ast.buildExpr(expr)
+			if t == nil {
+				return
+			}
+			temps = append(temps, t)
+		}
+
+		for i, d := range n.LHS {
+			dest := ast.buildExpr(d)
+			if dest == nil {
+				return
+			}
+
+			if !dest.addressable() {
+				ast.errs.Log(n.Pos, "assigning to not addressable")
+				return
+			}
+
+			destType := dest.Type()
+			src := temps[i]
+			srcType := src.Type()
+			if !srcType.canAssignTo(destType) {
+				ast.errs.Log(n.Pos, "cannot assign %s to %s", srcType, destType)
+				return
+			}
+
+			ast.ir.addAssign(dest, src)
+		}
+
+	case *ASTVarDecl:
+		var src *enode
+		if n.Expr != nil {
+			src = ast.buildExpr(n.Expr)
+		}
+
+		varName := n.Name.Lit
+		pre := ast.scope.findTop(varName)
+		if pre != nil {
+			ast.errs.Log(n.Name.Pos, "%s already declared", n.Name.Lit)
+			ast.errs.Log(pre.pos, "  previously declared here")
+			return
+		}
+
+		typ := newBasicType("int")
+		v := ast.newVar(varName, n.Name.Pos, typ)
+		sym := &symbol{
+			name: varName,
+			pos:  n.Name.Pos,
+			typ:  typ,
+			v:    v,
+		}
+		ast.scope.put(sym)
+
+		if n.Expr != nil {
+			if src == nil {
+				return
+			}
+			srcType := src.Type()
+			destType := v.Type()
+
+			if !srcType.canAssignTo(destType) {
+				ast.errs.Log(n.Name.Pos, "cannot assign %s to %s", srcType, destType)
+				return
+			}
+
+			ast.ir.addAssign(v, src)
+		} else {
+			ast.ir.addAssign(v, ast.makeZero(v.Type()))
+		}
+	}
+}
+
+func (ast *AST) newVar(name string, p *parser.Pos, t *xtype) *enode {
+	panic("todo")
+}
+
+func (ast *AST) makeZero(t *xtype) *enode {
+	panic("todo")
 }
