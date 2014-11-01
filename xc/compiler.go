@@ -55,12 +55,12 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 	}
 
 	ast := newStmtsAST(block)
-	if ast.errs.Len() != 0 {
+	if !ast.errs.Empty() {
 		return nil, ast.errs
 	}
 
 	ast.buildFunc()
-	if ast.errs.Len() != 0 {
+	if !ast.errs.Empty() {
 		return nil, ast.errs
 	}
 
@@ -77,7 +77,7 @@ func (s *Source) BuildExprsAST() (*ASTBlock, *parser.ErrList) {
 	}
 
 	ast := newExprsAST(block)
-	if ast.errs.Len() != 0 {
+	if !ast.errs.Empty() {
 		return nil, ast.errs
 	}
 
@@ -93,7 +93,7 @@ func (s *Source) BuildStmtsAST() (*ASTBlock, *parser.ErrList) {
 	}
 
 	ast := newStmtsAST(block)
-	if ast.errs.Len() != 0 {
+	if !ast.errs.Empty() {
 		return nil, ast.errs
 	}
 

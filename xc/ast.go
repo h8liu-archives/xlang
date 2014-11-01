@@ -12,8 +12,9 @@ type AST struct {
 	errs *parser.ErrList
 	s    *parser.EntryScanner
 
-	root ASTNode
-	obj  *Object
+	root  ASTNode
+	scope *scope
+	obj   *Object
 }
 
 // ASTBlock is a scoped block.
@@ -87,5 +88,17 @@ func (ast *AST) parseExprs(ret *ASTBlock, b *parser.Block) {
 }
 
 func (ast *AST) buildFunc() {
-	panic("todo")
+	ast.scope = newScope()
+	ast.scope.push()
+
+	b := ast.root.(*ASTBlock)
+	for _, s := range b.Nodes {
+		ast.buildStmt(s)
+	}
+
+	ast.scope.pop()
+}
+
+func (ast *AST) buildStmt(s ASTNode) {
+
 }

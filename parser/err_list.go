@@ -37,6 +37,11 @@ func (lst *ErrList) Len() int {
 	return len(lst.errs)
 }
 
+// Empty returns true when the list contains no errors.
+func (lst *ErrList) Empty() bool {
+	return lst.Len() == 0
+}
+
 // Scan returns if there is an error for scanning.
 func (lst *ErrList) Scan() bool {
 	if lst.scanned {
