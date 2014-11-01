@@ -1,7 +1,5 @@
 package xc
 
-import ()
-
 type nameIndex struct {
 	all map[string]interface{}
 }
