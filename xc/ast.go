@@ -13,6 +13,7 @@ type AST struct {
 	s    *parser.EntryScanner
 
 	root ASTNode
+	obj  *Object
 }
 
 // ASTBlock is a scoped block.

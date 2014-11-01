@@ -27,16 +27,10 @@ func (obj *Object) PubHeader() *Header {
 	return nil
 }
 
-// Lib defines the library context of a program.
-type Lib struct {
-}
-
 // Source defines the context required to compile a single source file.
 type Source struct {
 	File   string        // the file path
 	Reader io.ReadCloser // reader for the file content
-
-	Lib *Lib // dependency library
 }
 
 // NewStrSource creates a source file from a string.
@@ -66,8 +60,11 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 	}
 
 	ast.buildFunc()
+	if ast.errs.Len() != 0 {
+		return nil, ast.errs
+	}
 
-	return nil, nil // TODO
+	return ast.obj, nil // TODO
 }
 
 // BuildExprsAST builds the source as an .xexpr file, where
