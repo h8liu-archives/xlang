@@ -17,16 +17,16 @@ func (ast *AST) prepareBuild() {
 	// TODO: fix this
 	t := &xtype{isFunc: true}
 	v := &enode{
-		name: "print",
-		t: t,
+		name:   "print",
+		t:      t,
 		onHeap: true,
-		addr: 0x8000,
+		addr:   0x8000,
 	}
-	s := &symbol {
+	s := &symbol{
 		name: "print",
-		pos: nil,
-		typ: t,
-		v: v,
+		pos:  nil,
+		typ:  t,
+		v:    v,
 	}
 	ast.scope.put(s)
 }
