@@ -6,6 +6,8 @@ type xtype struct {
 	isInt    bool
 	unsigned bool
 	width    int32
+
+	isFunc bool
 }
 
 var (

@@ -44,6 +44,8 @@ func newScope() *scope {
 
 func (s *scope) push() {
 	index := new(nameIndex)
+	index.all = make(map[string]*symbol)
+
 	s.stack = append(s.stack, index)
 }
 

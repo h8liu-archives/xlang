@@ -39,6 +39,8 @@ func TestStmt(t *testing.T) {
 	o("println(3 + 4)", "println((3+4))")
 	o("x = 3 + 4", "x = (3+4)")
 	o("x = x", "x = x")
+	o("x", "x")
+	o("x + y", "(x+y)")
 
 	e("var")
 	e("var x =")
@@ -46,4 +48,5 @@ func TestStmt(t *testing.T) {
 	e("var x = (3")
 	e("x =")
 	e("x = var")
+	e("3, 4") // expr list is not a statement
 }

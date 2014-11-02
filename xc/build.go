@@ -1,17 +1,38 @@
 package xc
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 
 	"github.com/h8liu/xlang/parser"
 )
 
-var voidNode = &enode{t: typeVoid}
+var voidNode = &enode{isVoid: true, t: typeVoid}
 
-func (ast *AST) buildFunc() {
+func (ast *AST) prepareBuild() {
+	ast.ir = newIrBlock()
 	ast.scope = newScope()
+	ast.scope.push() // buildin scope
+
+	// TODO: fix this
+	t := &xtype{isFunc: true}
+	v := &enode{
+		name: "print",
+		t: t,
+		onHeap: true,
+		addr: 0x8000,
+	}
+	s := &symbol {
+		name: "print",
+		pos: nil,
+		typ: t,
+		v: v,
+	}
+	ast.scope.put(s)
+}
+
+// builds a function
+func (ast *AST) buildFunc() {
 	ast.scope.push()
 
 	b := ast.root.(*ASTBlock)
@@ -20,8 +41,12 @@ func (ast *AST) buildFunc() {
 	}
 
 	ast.scope.pop()
+
+	ast.obj = new(Object)
+	ast.obj.ir = ast.ir
 }
 
+// builds an expression
 func (ast *AST) buildExpr(s ASTNode) *enode {
 	switch n := s.(type) {
 	case *ASTOpExpr:
@@ -38,9 +63,10 @@ func (ast *AST) buildExpr(s ASTNode) *enode {
 	return nil
 }
 
+// builds an operation
 func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 	const arithErr = "arithmetic operation on non-number"
-	const typeErr = "type mismatch on arithmetic operation %q"
+	const typeErr = "type mismatch on operation %q"
 
 	if n.A == nil {
 		// unary op
@@ -83,7 +109,7 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 			ast.errs.Log(n.Op.Pos, arithErr)
 			return nil
 		}
-		if a.typ().numEquals(b.typ()) {
+		if !a.typ().numEquals(b.typ()) {
 			ast.errs.Log(n.Op.Pos, typeErr, n.Op.Lit)
 			return nil
 		}
@@ -96,6 +122,7 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 	}
 }
 
+// builds a function call
 func (ast *AST) buildCall(n *ASTCall) *enode {
 	f := ast.buildExpr(n.Func)
 	if f == nil {
@@ -123,10 +150,21 @@ func (ast *AST) buildCall(n *ASTCall) *enode {
 	return voidNode
 }
 
+// builds a variable reference
 func (ast *AST) buildVarRef(t *parser.Tok) *enode {
-	panic("todo")
+	found := ast.scope.find(t.Lit)
+	if found == nil {
+		ast.errs.Log(t.Pos, "%s not defined", t.Lit)
+		return nil
+	}
+
+	return found.v
 }
 
+// builds a integer constant.
+// for integer within int32 range, the type is int32
+// otherwise, for integer within uint32 range, the type is uint32
+// otherwise, it is out of range and invalid
 func (ast *AST) buildIntConst(t *parser.Tok) *enode {
 	v, e := strconv.ParseInt(t.Lit, 0, 64)
 	if e != nil {
@@ -146,6 +184,7 @@ func (ast *AST) buildIntConst(t *parser.Tok) *enode {
 	return ast.newConst(typeInt, int32(v))
 }
 
+// build assignment
 func (ast *AST) buildAssign(n *ASTAssign) {
 	nleft := len(n.LHS)
 	nright := len(n.RHS)
@@ -188,10 +227,14 @@ func (ast *AST) buildAssign(n *ASTAssign) {
 	}
 }
 
+// build variable declaration
 func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 	var src *enode
 	if n.Expr != nil {
 		src = ast.buildExpr(n.Expr)
+		if src == nil {
+			return
+		}
 	}
 
 	varName := n.Name.Lit
@@ -230,45 +273,20 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 	}
 }
 
+func (ast *AST) buildExprStmt(n *ASTExprStmt) {
+	ast.buildExpr(n.Expr)
+}
+
+// build a statement
 func (ast *AST) buildStmt(s ASTNode) {
 	switch n := s.(type) {
 	case *ASTAssign:
 		ast.buildAssign(n)
 	case *ASTVarDecl:
 		ast.buildVarDecl(n)
+	case *ASTExprStmt:
+		ast.buildExprStmt(n)
+	default:
+		panic("invalid statement")
 	}
-}
-
-func (ast *AST) newVar(name string, t *xtype) *enode {
-	ret := new(enode)
-	ret.name = name
-	ret.t = t
-	ret.addr = ast.ir.stackAlloc(t.size(), ret)
-
-	return ret
-}
-
-func (ast *AST) newTemp(t *xtype) *enode {
-	ret := new(enode)
-	ret.t = t
-	ret.addr = ast.ir.stackAlloc(t.size(), ret)
-	ret.name = fmt.Sprintf("#%d", ret.addr)
-
-	return ret
-}
-
-func (ast *AST) newConst(t *xtype, v int32) *enode {
-	ret := new(enode)
-	ret.t = t
-	if t.isInt {
-		ret.isConst = true
-		ret.value = v
-	} else {
-		panic("todo")
-	}
-	return ret
-}
-
-func (ast *AST) newZero(t *xtype) *enode {
-	return ast.newConst(t, 0)
 }

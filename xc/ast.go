@@ -14,7 +14,7 @@ type AST struct {
 
 	root  ASTNode
 	scope *scope
-	ir    *irBuilder
+	ir    *irBlock
 	obj   *Object
 }
 

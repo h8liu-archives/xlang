@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/h8liu/xlang/parser"
+	"github.com/h8liu/xlang/prt"
 )
 
 // Header defines all the constants and symbols.
@@ -15,6 +16,7 @@ type Header struct {
 // Object defines the compiling result of a source file.
 type Object struct {
 	header *Header
+	ir     *irBlock
 }
 
 // Header returns the header of an object file.
@@ -25,6 +27,11 @@ func (obj *Object) Header() *Header {
 // PubHeader returns the public header of an object file.
 func (obj *Object) PubHeader() *Header {
 	return nil
+}
+
+func (obj *Object) PrintIR(out io.Writer) {
+	p := prt.New(out)
+	obj.ir.PrintInsts(p)
 }
 
 // Source defines the context required to compile a single source file.
@@ -59,12 +66,13 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 		return nil, ast.errs
 	}
 
+	ast.prepareBuild()
 	ast.buildFunc()
 	if !ast.errs.Empty() {
 		return nil, ast.errs
 	}
 
-	return ast.obj, nil // TODO
+	return ast.obj, nil
 }
 
 // BuildExprsAST builds the source as an .xexpr file, where

@@ -23,7 +23,7 @@ type ASTAssign struct {
 
 // ASTExprStmt is an expression statement.
 type ASTExprStmt struct {
-	Exprs []ASTNode
+	Expr ASTNode
 }
 
 func (ast *AST) parseStmt() ASTNode {
@@ -62,6 +62,9 @@ func (ast *AST) parseStmt() ASTNode {
 		}
 	} else {
 		exprs := ast.parseExprList()
+		if exprs == nil {
+			return nil
+		}
 
 		if ast.s.AcceptOp("=") {
 			p := ast.s.Pos()
@@ -71,9 +74,12 @@ func (ast *AST) parseStmt() ASTNode {
 				RHS: rhs,
 				Pos: p,
 			}
+		} else if len(exprs) > 1 {
+			ast.errs.Log(ast.s.Pos(), "unexpected end of statement, expect = or :=")
+			return nil
 		}
 
-		return &ASTExprStmt{Exprs: exprs}
+		return &ASTExprStmt{Expr: exprs[0]}
 	}
 }
 
@@ -100,7 +106,7 @@ func PrintStmt(p *prt.Printer, node ASTNode) {
 			PrintExpr(p, n.Expr)
 		}
 	case *ASTExprStmt:
-		printExprList(p, n.Exprs)
+		PrintExpr(p, n.Expr)
 	default:
 		p.Print("/* invalid statement */")
 	}
