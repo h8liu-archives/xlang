@@ -22,8 +22,10 @@ type ASTOpExpr struct {
 
 // ASTCall describes a function call.
 type ASTCall struct {
-	Func  ASTNode
-	Paras []ASTNode
+	Func   ASTNode
+	Paras  []ASTNode
+	Lparen *parser.Tok
+	Rparen *parser.Tok
 
 	Info ASTInfo
 }
@@ -33,10 +35,15 @@ func (ast *AST) parsePrimaryExpr() ASTNode {
 
 	for {
 		if ast.s.AcceptOp("(") {
+			lp := ast.s.Accepted()
+
 			if ast.s.AcceptOp(")") {
+				rp := ast.s.Accepted()
 				ret = &ASTCall{
-					Func:  ret,
-					Paras: make([]ASTNode, 0),
+					Func:   ret,
+					Paras:  make([]ASTNode, 0),
+					Lparen: lp,
+					Rparen: rp,
 				}
 				continue
 			}
@@ -45,12 +52,16 @@ func (ast *AST) parsePrimaryExpr() ASTNode {
 			if lst == nil {
 				return nil
 			}
-			ret = &ASTCall{
-				Func:  ret,
-				Paras: lst,
-			}
 			if !ast.expectOp(")") {
 				return nil
+			}
+
+			rp := ast.s.Accepted()
+			ret = &ASTCall{
+				Func:   ret,
+				Paras:  lst,
+				Lparen: lp,
+				Rparen: rp,
 			}
 		} else {
 			// done with all those suffixes

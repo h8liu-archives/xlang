@@ -5,7 +5,8 @@ type EntryScanner struct {
 	s     Stmt
 	index int
 
-	last *Tok
+	accepted *Tok
+	last     *Tok
 }
 
 // NewEntryScanner creates a new EntryScanner
@@ -97,6 +98,7 @@ func (s *EntryScanner) AcceptOp(op string) bool {
 		return false
 	}
 
+	s.accepted = s.Entry().Tok
 	s.next()
 	return true
 }
@@ -109,6 +111,7 @@ func (s *EntryScanner) AcceptKeyword(kw string) bool {
 		return false
 	}
 
+	s.accepted = s.Entry().Tok
 	s.next()
 	return true
 }
@@ -117,8 +120,14 @@ func (s *EntryScanner) AcceptKeyword(kw string) bool {
 // It panics if the current entry is a block.
 func (s *EntryScanner) Accept() *Tok {
 	ret := s.Tok()
+	s.accepted = ret
 	s.next()
 	return ret
+}
+
+// Accepted returns the token that is just accepted.
+func (s *EntryScanner) Accepted() *Tok {
+	return s.accepted
 }
 
 // Tok returns the current token entry.
