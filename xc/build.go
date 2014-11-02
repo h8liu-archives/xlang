@@ -232,9 +232,7 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 	var src *enode
 	if n.Expr != nil {
 		src = ast.buildExpr(n.Expr)
-		if src == nil {
-			return
-		}
+		// still build the symbol if src is nil
 	}
 
 	varName := n.Name.Lit
