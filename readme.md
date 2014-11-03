@@ -66,8 +66,8 @@ There are still some nitches for Go language:
 
 Also some other reasons that I want to invent (again) a new language:
 
-- The Go language compiler is non-trivial to write. Looking at the code,
-  I don't understand how it works.
+- The Go language compiler is non-trivial to write (and read). Looking at the
+  code, I don't understand how it works.
 - Go language has garbage collection built-in in the runtime, so it is probably
   not the best language for writing an operating system.
 
