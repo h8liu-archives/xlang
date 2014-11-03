@@ -59,9 +59,9 @@ There are still some nitches for Go language:
 
 - A package can be really big and becomes hard to understand (like the
   `net/http` package), where splitting it to multiple smaller packages
-  is sometimes not encouraged (because packages is essentially a library
+  is sometimes not encouraged (because a package is essentially a library
   that does well on some particular single thing, and `http` is one big
-  single thing.)
+  single thing but not multiple small things.)
 - Poor package management. The Go language guys at Google just do not care,
   and I really don't see how the open source community can figure this thing
   out automatically.
