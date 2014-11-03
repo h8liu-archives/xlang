@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/h8liu/xlang/ir"
 	"github.com/h8liu/xlang/parser"
 	"github.com/h8liu/xlang/prt"
 )
@@ -16,7 +17,8 @@ type Header struct {
 // Object defines the compiling result of a source file.
 type Object struct {
 	header *Header
-	ir     *irBlock
+	f      *ir.Func
+	b      *ir.Block
 }
 
 // Header returns the header of an object file.
@@ -31,7 +33,8 @@ func (obj *Object) PubHeader() *Header {
 
 func (obj *Object) PrintIR(out io.Writer) {
 	p := prt.New(out)
-	obj.ir.PrintInsts(p)
+
+	obj.b.PrintInsts(p)
 }
 
 // Source defines the context required to compile a single source file.

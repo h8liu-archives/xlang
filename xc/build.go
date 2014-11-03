@@ -4,23 +4,24 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/h8liu/xlang/ir"
 	"github.com/h8liu/xlang/parser"
 )
 
-var voidNode = &enode{isVoid: true, t: typeVoid}
+var voidNode = &enode{t: typeVoid, v: ir.Void}
 
 func (ast *AST) prepareBuild() {
-	ast.ir = newIrBlock()
+	ast.f = ir.NewFunc()
+	ast.b = ast.f.NewBlock()
 	ast.scope = newScope()
 	ast.scope.push() // buildin scope
 
 	// TODO: fix this
 	t := &xtype{isFunc: true}
 	v := &enode{
-		name:   "print",
-		t:      t,
-		onHeap: true,
-		addr:   0x8000,
+		name: "print",
+		t:    t,
+		v:    ir.NewConst(0x8000),
 	}
 	s := &symbol{
 		name: "print",
@@ -43,7 +44,8 @@ func (ast *AST) buildFunc() {
 	ast.scope.pop()
 
 	ast.obj = new(Object)
-	ast.obj.ir = ast.ir
+	ast.obj.f = ast.f
+	ast.obj.b = ast.b
 }
 
 // builds an expression
@@ -91,7 +93,7 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 				return nil
 			}
 			ret := ast.newTemp(b.typ())
-			ast.ir.addUnaryOp(ret, "-", b)
+			ast.b.AddUnaryOp(ret.v, "-", b.v)
 			return ret
 		default:
 			panic("unknown op")
@@ -115,7 +117,7 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 		}
 
 		ret := ast.newTemp(a.typ())
-		ast.ir.addBinaryOp(ret, a, n.Op.Lit, b)
+		ast.b.AddBinaryOp(ret.v, a.v, n.Op.Lit, b.v)
 		return ret
 	default:
 		panic("unknown op")
@@ -129,13 +131,13 @@ func (ast *AST) buildCall(n *ASTCall) *enode {
 		return nil
 	}
 
-	var args []*enode
+	var args []*ir.Var
 	for _, p := range n.Paras {
 		r := ast.buildExpr(p)
 		if r == nil {
 			return nil
 		}
-		args = append(args, r)
+		args = append(args, r.v)
 	}
 
 	// TODO: function signature type check
@@ -146,7 +148,8 @@ func (ast *AST) buildCall(n *ASTCall) *enode {
 		return nil
 	}
 
-	ast.ir.addCall(voidNode, f, args...)
+	ast.b.AddCall(ir.Void, f.v, args...)
+
 	return voidNode
 }
 
@@ -223,7 +226,7 @@ func (ast *AST) buildAssign(n *ASTAssign) {
 			return
 		}
 
-		ast.ir.addAssign(dest, src)
+		ast.b.AddAssign(dest.v, src.v)
 	}
 }
 
@@ -265,9 +268,9 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 			return
 		}
 
-		ast.ir.addAssign(v, src)
+		ast.b.AddAssign(v.v, src.v)
 	} else {
-		ast.ir.addAssign(v, ast.newZero(v.typ()))
+		ast.b.AddAssign(v.v, ast.newZero(v.typ()).v)
 	}
 }
 

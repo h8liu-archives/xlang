@@ -1,6 +1,7 @@
 package xc
 
 import (
+	"github.com/h8liu/xlang/ir"
 	"github.com/h8liu/xlang/parser"
 )
 
@@ -14,8 +15,10 @@ type AST struct {
 
 	root  ASTNode
 	scope *scope
-	ir    *irBlock
-	obj   *Object
+
+	f   *ir.Func
+	b   *ir.Block
+	obj *Object
 }
 
 // ASTBlock is a scoped block.

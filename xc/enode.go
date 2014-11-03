@@ -1,21 +1,18 @@
 package xc
 
 import (
-	"bytes"
-	"fmt"
+	"github.com/h8liu/xlang/ir"
 )
 
+// this enode thing has two parts.
+// first, it is a memory object on the stack or the heap.
+// second, it has a type descriptor
+// we sould move the memory object part to the ir, because the IR optimizer could
+// futher change that
 type enode struct {
 	name string // this is just for debugging
 	t    *xtype
-
-	isVoid bool
-
-	isConst bool
-	value   int32
-
-	onHeap bool
-	addr   int32
+	v    *ir.Var
 }
 
 func (n *enode) typ() *xtype {
@@ -23,32 +20,5 @@ func (n *enode) typ() *xtype {
 }
 
 func (n *enode) addressable() bool {
-	if n.isConst || n.isVoid {
-		return false
-	}
-
-	return true
-}
-
-func (n *enode) String() string {
-	ret := new(bytes.Buffer)
-	fmt.Fprintf(ret, "<")
-
-	if n.isVoid {
-		fmt.Fprintf(ret, "void")
-	} else if n.isConst {
-		fmt.Fprintf(ret, "C#%d", n.value)
-	} else if n.onHeap {
-		fmt.Fprintf(ret, "H#%d", n.addr)
-	} else {
-		// on stack
-		fmt.Fprintf(ret, "S#%d", n.addr)
-	}
-
-	if n.name != "" {
-		fmt.Fprintf(ret, " [%s]", n.name)
-	}
-
-	fmt.Fprintf(ret, ">")
-	return ret.String()
+	return n.v.IsAddressable()
 }

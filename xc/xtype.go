@@ -5,7 +5,7 @@ type xtype struct {
 
 	isInt    bool
 	unsigned bool
-	width    int32
+	width    uint32
 
 	isFunc bool
 }
@@ -63,7 +63,7 @@ func (t *xtype) canAssignTo(d *xtype) bool {
 	panic("bug")
 }
 
-func (t *xtype) size() int32 {
+func (t *xtype) size() uint32 {
 	if t.isVoid {
 		return 0
 	}
