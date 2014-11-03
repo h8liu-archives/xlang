@@ -2,7 +2,7 @@
 
 # Xlang
 
-Xlang is a my toy language as my effort to enable writing comprehensible code,
+Xlang is my toy language as my effort to enable writing comprehensible code,
 where people can easily take some piece of code, read it, understand it,
 use it, wrap it, or even change it, into better code.
 
