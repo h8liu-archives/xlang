@@ -47,7 +47,10 @@ func TestFunc(t *testing.T) {
 	o("var x=4; print(x-3)", "1")
 	o("var x; var y; x,y = 3,4; print(x-y)", "-1")
 	o("var x,y; x,y = 3,4; print(x-y)", "-1")
+	o("var x,y = 3,4; print(x-y)", "-1")
+	o("var x,y; y=4; print(x-y)", "-4")
 
 	e("print(a)")
 	e("var y = x-3")
+	e("var x,y = 3")
 }
