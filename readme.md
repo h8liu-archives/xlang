@@ -26,7 +26,7 @@ I have several previous tries including [E8](http://github.com/e8vm) and
 [Luna](http://github.com/h8liu/luna).  E8 is a simple toy architecture, and
 Luna is a subset of ARM architecture, which I plan to play with on Raspberry
 Pi's.  However, picking and simulating a simple architecture is relatively
-simple, while building a programming language power enough to host itself and
+simple, while building a programming language powerful enough to host itself and
 an operating system (in a comprehensible way) is much harder. Plus, if I have a
 working compiler with a relatively good IR design, porting it to multiple
 architectures seems not a very complicated task.
