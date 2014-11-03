@@ -28,7 +28,7 @@ func New(w io.Writer) *Printer {
 	}
 
 	return &Printer{
-		Indent: "\t",
+		Indent: "    ",
 		Writer: w,
 	}
 }

@@ -1,40 +1,8 @@
 package xc
 
-import (
-	"github.com/h8liu/xlang/parser"
-)
-
-type symbol struct {
-	name string
-	pos  *parser.Pos
-	typ  *xtype
-	v    *enode
-}
-
-type nameIndex struct {
-	all map[string]*symbol
-}
-
-func (ind *nameIndex) put(s *symbol) bool {
-	if s == nil {
-		panic("cannot put nil")
-	}
-
-	name := s.name
-	_, found := ind.all[name]
-	if found {
-		return false
-	}
-	ind.all[name] = s
-	return true
-}
-
-func (ind *nameIndex) find(name string) *symbol {
-	return ind.all[name]
-}
-
+// a scope is just a stack of symbol lookup tables
 type scope struct {
-	stack []*nameIndex
+	stack []*symTable
 }
 
 func newScope() *scope {
@@ -43,9 +11,7 @@ func newScope() *scope {
 }
 
 func (s *scope) push() {
-	index := new(nameIndex)
-	index.all = make(map[string]*symbol)
-
+	index := newSymTable()
 	s.stack = append(s.stack, index)
 }
 
@@ -57,7 +23,7 @@ func (s *scope) pop() {
 	s.stack = s.stack[:len(s.stack)-1]
 }
 
-func (s *scope) top() *nameIndex {
+func (s *scope) top() *symTable {
 	if len(s.stack) == 0 {
 		panic("no top yet")
 	}

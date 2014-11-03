@@ -17,16 +17,15 @@ func (ast *AST) prepareBuild() {
 	ast.scope.push() // buildin scope
 
 	// TODO: fix this
-	t := &xtype{isFunc: true}
+	t := newFuncType(typeVoid, typeInt)
 	v := &enode{
 		name: "print",
 		t:    t,
-		v:    ir.NewConst(0x8000),
+		v:    ir.NewConstSym("<builtin>", "print"),
 	}
 	s := &symbol{
 		name: "print",
 		pos:  nil,
-		typ:  t,
 		v:    v,
 	}
 	ast.scope.put(s)
@@ -181,10 +180,10 @@ func (ast *AST) buildIntConst(t *parser.Tok) *enode {
 	}
 
 	if v > math.MaxInt32 {
-		return ast.newConst(typeUint, int32(v))
+		return newConst(typeUint, int32(v))
 	}
 
-	return ast.newConst(typeInt, int32(v))
+	return newConst(typeInt, int32(v))
 }
 
 // build assignment
@@ -241,6 +240,9 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 	varName := n.Name.Lit
 	pre := ast.scope.findTop(varName)
 	if pre != nil {
+		if pre.pos == nil {
+			panic("trying redeclare a builtin symbol?")
+		}
 		ast.errs.Log(n.Name.Pos, "%s already declared", n.Name.Lit)
 		ast.errs.Log(pre.pos, "  previously declared here")
 		return
@@ -251,7 +253,6 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 	sym := &symbol{
 		name: varName,
 		pos:  n.Name.Pos,
-		typ:  typ,
 		v:    v,
 	}
 	ast.scope.put(sym)
@@ -270,7 +271,7 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 
 		ast.b.AddAssign(v.v, src.v)
 	} else {
-		ast.b.AddAssign(v.v, ast.newZero(v.typ()).v)
+		ast.b.AddAssign(v.v, newZero(v.typ()).v)
 	}
 }
 

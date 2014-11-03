@@ -8,6 +8,8 @@ type xtype struct {
 	width    uint32
 
 	isFunc bool
+	ret    *xtype
+	args   []*xtype
 }
 
 var (
@@ -18,6 +20,14 @@ var (
 	typeChar = &xtype{isInt: true, width: 8, unsigned: false}
 	typeByte = &xtype{isInt: true, width: 8, unsigned: true}
 )
+
+func newFuncType(ret *xtype, args ...*xtype) *xtype {
+	return &xtype{
+		isFunc: true,
+		ret:    ret,
+		args:   args,
+	}
+}
 
 func (t *xtype) String() string {
 	if t.isVoid {

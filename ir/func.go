@@ -1,10 +1,16 @@
 package ir
 
+import (
+	"github.com/h8liu/xlang/prt"
+)
+
+// Func is an IR function unit.
 type Func struct {
 	blocks []*Block
 	vars   []*Var
 }
 
+// NewFunc creates a new IR function unit.
 func NewFunc() *Func {
 	ret := new(Func)
 	return ret
@@ -14,6 +20,7 @@ func NewFunc() *Func {
 func (f *Func) NewBlock() *Block {
 	ret := new(Block)
 	ret.f = f
+	ret.index = len(f.blocks)
 
 	f.blocks = append(f.blocks, ret)
 	return ret
@@ -38,4 +45,28 @@ func (f *Func) StackAlloc(size uint32) *Var {
 
 	f.vars = append(f.vars, ret)
 	return ret
+}
+
+// Sim simulates the function execution.
+func (f *Func) Sim() {
+	if len(f.blocks) == 0 {
+		return
+	}
+
+	b := f.blocks[0]
+	for {
+		b = b.sim()
+		if b == nil {
+			break
+		}
+	}
+
+	return
+}
+
+// Print prints the function.
+func (f *Func) Print(p *prt.Printer) {
+	for _, b := range f.blocks {
+		b.Print(p)
+	}
 }

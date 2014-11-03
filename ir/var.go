@@ -9,17 +9,25 @@ import (
 // Var does not have a type referring to it; typing and
 // type checking is the compiler's issue.
 type Var struct {
-	Name string // just for debugging
+	Name  string // just for debugging
+	value int32  // the constant value
 
 	onHeap bool // if it is allocated on the heap or the stack
 	size   uint32
 	index  int
 	addr   uint32
 
-	isConst bool  // if it is a just a constant
-	value   int32 // the constant value
+	isConst bool // if it is a just a constant
 
 	isVoid bool // if this variable is not a void spaceholder
+
+	// a symbol for late binding
+	// if it is a constant, then the value field is late binding
+	// if it is a variable, then it must be onHeap
+	// and the address is late binding
+	isSymbol bool   // symbol for late binding
+	modName  string // module
+	symName  string // symbol name
 
 	// TODO: think more about these optimization fields
 	isVolatile bool // if the variable must be alloced in mem
@@ -61,6 +69,31 @@ func NewConst(v int32) *Var {
 	ret := new(Var)
 	ret.isConst = true
 	ret.value = v
+	return ret
+}
+
+func newSym(mod, name string) *Var {
+	ret := new(Var)
+	ret.isSymbol = true
+	ret.modName = mod
+	ret.symName = name
+	ret.Name = fmt.Sprintf("%s.%s", mod, name)
+
+	return ret
+}
+
+// NewConstSym retunrs a new constant symbol
+func NewConstSym(mod, name string) *Var {
+	ret := newSym(mod, name)
+	ret.isConst = true
+
+	return ret
+}
+
+// NewHeapSym retunrs a new heap symbol
+func NewHeapSym(mod, name string) *Var {
+	ret := new(Var)
+	ret.onHeap = true
 	return ret
 }
 

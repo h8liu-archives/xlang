@@ -31,10 +31,10 @@ func (obj *Object) PubHeader() *Header {
 	return nil
 }
 
+// PrintIR prints the IR of the default block.
 func (obj *Object) PrintIR(out io.Writer) {
 	p := prt.New(out)
-
-	obj.b.PrintInsts(p)
+	obj.f.Print(p)
 }
 
 // Source defines the context required to compile a single source file.

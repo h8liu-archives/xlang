@@ -4,17 +4,17 @@ import (
 	"github.com/h8liu/xlang/ir"
 )
 
+// newVar allocates a named variable from the current function's stack
 func (ast *AST) newVar(name string, t *xtype) *enode {
-	ret := new(enode)
-	ret.name = name
-	ret.t = t
+	ret := ast.newTemp(t)
 
-	ret.v = ast.f.StackAlloc(t.size())
 	ret.v.Name = name
+	ret.name = name
 
 	return ret
 }
 
+// newTemp allocates an unamed temp variable from the current function's stack
 func (ast *AST) newTemp(t *xtype) *enode {
 	ret := new(enode)
 	ret.t = t
@@ -23,7 +23,8 @@ func (ast *AST) newTemp(t *xtype) *enode {
 	return ret
 }
 
-func (ast *AST) newConst(t *xtype, v int32) *enode {
+// newConst creates a constant enode out of thin air
+func newConst(t *xtype, v int32) *enode {
 	ret := new(enode)
 	ret.t = t
 	if t.isInt {
@@ -34,6 +35,7 @@ func (ast *AST) newConst(t *xtype, v int32) *enode {
 	return ret
 }
 
-func (ast *AST) newZero(t *xtype) *enode {
-	return ast.newConst(t, 0)
+// newZero creates a zero value constant enode out of thin air
+func newZero(t *xtype) *enode {
+	return newConst(t, 0)
 }
