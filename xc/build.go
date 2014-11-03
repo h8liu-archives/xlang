@@ -141,9 +141,8 @@ func (ast *AST) buildCall(n *ASTCall) *enode {
 
 	// TODO: function signature type check
 	// we now assume it is always print with one parameter
-
 	if len(n.Paras) != 1 {
-		ast.errs.Log(n.Lparen.Pos, "print only accepts one paramter")
+		ast.errs.Log(n.Lparen.Pos, "print takes exactly one paramter")
 		return nil
 	}
 
