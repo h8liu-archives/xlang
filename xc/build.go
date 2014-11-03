@@ -230,47 +230,62 @@ func (ast *AST) buildAssign(n *ASTAssign) {
 
 // build variable declaration
 func (ast *AST) buildVarDecl(n *ASTVarDecl) {
-	var src *enode
-	if n.Expr != nil {
-		src = ast.buildExpr(n.Expr)
-		// still build the symbol if src is nil
-	}
+	var srcs []*enode
 
-	varName := n.Name.Lit
-	pre := ast.scope.findTop(varName)
-	if pre != nil {
-		if pre.pos == nil {
-			panic("trying redeclare a builtin symbol?")
+	// evaluate the expressions first
+	if n.Exprs != nil {
+		if len(n.Exprs) != len(n.Names) {
+			ast.errs.Log(n.Pos, "number of expressions mismatch")
+		} else {
+			srcs = make([]*enode, len(n.Exprs))
+			for i, expr := range n.Exprs {
+				e := ast.buildExpr(expr)
+				if e == nil {
+					srcs = nil
+					break
+				}
+				srcs[i] = e
+			}
 		}
-		ast.errs.Log(n.Name.Pos, "%s already declared", n.Name.Lit)
-		ast.errs.Log(pre.pos, "  previously declared here")
-		return
 	}
 
-	typ := typeInt // TODO: parse the type
-	v := ast.newVar(varName, typ)
-	sym := &symbol{
-		name: varName,
-		pos:  n.Name.Pos,
-		v:    v,
-	}
-	ast.scope.put(sym)
-
-	if n.Expr != nil {
-		if src == nil {
-			return
-		}
-		srcType := src.typ()
-		destType := v.typ()
-
-		if !srcType.canAssignTo(destType) {
-			ast.errs.Log(n.Name.Pos, "cannot assign %s to %s", srcType, destType)
+	// now we declare the names
+	for i, name := range n.Names {
+		pre := ast.scope.findTop(name.Lit)
+		if pre != nil {
+			if pre.pos == nil {
+				panic("trying redeclare a builtin symbol?")
+			}
+			ast.errs.Log(name.Pos, "%s already declared", name.Lit)
+			ast.errs.Log(pre.pos, "  previously declared here")
 			return
 		}
 
-		ast.b.AddAssign(v.v, src.v)
-	} else {
-		ast.b.AddAssign(v.v, newZero(v.typ()).v)
+		typ := typeInt // TODO: parse the type
+		v := ast.newVar(name.Lit, typ)
+		sym := &symbol{
+			name: name.Lit,
+			pos:  name.Pos,
+			v:    v,
+		}
+		ast.scope.put(sym)
+
+		if srcs != nil {
+			// have init list, then assign it
+			src := srcs[i]
+			srcType := src.typ()
+			destType := v.typ()
+
+			if !srcType.canAssignTo(destType) {
+				ast.errs.Log(name.Pos, "cannot assign %s to %s", srcType, destType)
+				return
+			}
+
+			ast.b.AddAssign(v.v, src.v)
+		} else {
+			// init with zero value
+			ast.b.AddAssign(v.v, newZero(v.typ()).v)
+		}
 	}
 }
 

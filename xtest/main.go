@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/h8liu/xlang/xc"
 )
@@ -18,5 +19,5 @@ func main() {
 		return
 	}
 
-	obj.Sim()
+	obj.Sim(os.Stdout)
 }

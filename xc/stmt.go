@@ -9,9 +9,9 @@ import (
 
 // ASTVarDecl variable declaration statement.
 type ASTVarDecl struct {
-	Name *parser.Tok
-	Expr ASTNode
-	Pos  *parser.Pos
+	Names []*parser.Tok
+	Exprs []ASTNode
+	Pos   *parser.Pos
 }
 
 // ASTAssign is an assignment statement.
@@ -26,6 +26,24 @@ type ASTExprStmt struct {
 	Expr ASTNode
 }
 
+func (ast *AST) parseIdentList() []*parser.Tok {
+	var ret []*parser.Tok
+	for {
+		if !ast.s.SeeIdent() {
+			ast.logExpectIdent()
+			return nil
+		}
+		t := ast.s.Accept()
+		ret = append(ret, t)
+
+		if !ast.s.AcceptOp(",") {
+			break
+		}
+	}
+
+	return ret
+}
+
 func (ast *AST) parseStmt() ASTNode {
 	if ast.s.SeeBlock() {
 		panic("todo: parsing a block statement")
@@ -34,31 +52,29 @@ func (ast *AST) parseStmt() ASTNode {
 			panic("todo: parsing var decl block")
 		}
 
-		// TODO: ident list
-		if !ast.s.SeeIdent() {
-			ast.logExpectIdent()
+		idents := ast.parseIdentList()
+		if idents == nil {
 			return nil
 		}
-		name := ast.s.Accept()
 
 		if ast.s.AcceptOp("=") {
 			p := ast.s.Pos()
 
-			expr := ast.parseExpr()
-			if expr == nil {
+			exprs := ast.parseExprList()
+			if exprs == nil {
 				return nil
 			}
 
 			return &ASTVarDecl{
-				Name: name,
-				Expr: expr,
-				Pos:  p,
+				Names: idents,
+				Exprs: exprs,
+				Pos:   p,
 			}
 		}
 
 		return &ASTVarDecl{
-			Name: name,
-			Pos:  ast.s.Pos(),
+			Names: idents,
+			Pos:   ast.s.Pos(),
 		}
 	} else {
 		exprs := ast.parseExprList()
@@ -99,11 +115,11 @@ func PrintStmt(p *prt.Printer, node ASTNode) {
 		p.Print(" = ")
 		printExprList(p, n.RHS)
 	case *ASTVarDecl:
-		if n.Expr == nil {
-			p.Printf("var %s", n.Name.Lit)
-		} else {
-			p.Printf("var %s = ", n.Name.Lit)
-			PrintExpr(p, n.Expr)
+		p.Printf("var ")
+		printIdentList(p, n.Names)
+		if n.Exprs != nil {
+			p.Printf(" = ")
+			printExprList(p, n.Exprs)
 		}
 	case *ASTExprStmt:
 		PrintExpr(p, n.Expr)

@@ -177,6 +177,15 @@ func printExprList(p *prt.Printer, lst []ASTNode) {
 	}
 }
 
+func printIdentList(p *prt.Printer, lst []*parser.Tok) {
+	for i, t := range lst {
+		if i != 0 {
+			p.Print(",")
+		}
+		p.Print(t.Lit)
+	}
+}
+
 // PrintExpr prints the expression with the printer.
 func PrintExpr(p *prt.Printer, node ASTNode) {
 	switch n := node.(type) {

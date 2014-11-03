@@ -1,6 +1,8 @@
 package ir
 
 import (
+	"io"
+
 	"github.com/h8liu/xlang/prt"
 )
 
@@ -48,14 +50,14 @@ func (f *Func) StackAlloc(size uint32) *Var {
 }
 
 // Sim simulates the function execution.
-func (f *Func) Sim() {
+func (f *Func) Sim(out io.Writer) {
 	if len(f.blocks) == 0 {
 		return
 	}
 
 	b := f.blocks[0]
 	for {
-		b = b.sim()
+		b = b.sim(out)
 		if b == nil {
 			break
 		}

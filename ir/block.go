@@ -3,6 +3,7 @@ package ir
 import (
 	"bytes"
 	"fmt"
+	"io"
 
 	"github.com/h8liu/xlang/prt"
 )
@@ -126,7 +127,7 @@ func (b *Block) Func() *Func {
 	return b.f
 }
 
-func (b *Block) simOp(i *Op) {
+func (b *Block) simOp(out io.Writer, i *Op) {
 	if i.a == nil {
 		switch i.op {
 		case "", "+":
@@ -148,12 +149,12 @@ func (b *Block) simOp(i *Op) {
 	}
 }
 
-func (b *Block) simCall(i *Call) {
+func (b *Block) simCall(out io.Writer, i *Call) {
 	if i.f.isSymbol && i.f.modName == "<builtin>" {
 		switch i.f.symName {
 		case "print":
 			for _, a := range i.args {
-				fmt.Println(a.value)
+				fmt.Fprintln(out, a.value)
 			}
 		default:
 			panic("bug")
@@ -163,13 +164,13 @@ func (b *Block) simCall(i *Call) {
 	}
 }
 
-func (b *Block) sim() *Block {
+func (b *Block) sim(out io.Writer) *Block {
 	for _, i := range b.insts {
 		switch i := i.(type) {
 		case *Op:
-			b.simOp(i)
+			b.simOp(out, i)
 		case *Call:
-			b.simCall(i)
+			b.simCall(out, i)
 		default:
 			panic("bug")
 		}

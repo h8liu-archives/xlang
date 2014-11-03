@@ -30,6 +30,7 @@ func (obj *Object) PrintIR(out io.Writer) {
 	obj.f.Print(p)
 }
 
-func (obj *Object) Sim() {
-	obj.f.Sim()
+// Sim simulates the object and write the output result to out.
+func (obj *Object) Sim(out io.Writer) {
+	obj.f.Sim(out)
 }
