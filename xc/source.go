@@ -41,9 +41,7 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 		return nil, errs
 	}
 
-	b := new(builder)
-	b.t = tree
-	b.prepare()
+	b := newBuilder(tree)
 	b.buildFunc()
 	if !b.errs.Empty() {
 		return nil, b.errs

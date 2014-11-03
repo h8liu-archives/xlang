@@ -16,16 +16,14 @@ type Block struct {
 	insts []interface{}
 }
 
-// Op represents an instruction operation
-type Op struct {
+type oper struct {
 	dest *Var
 	a    *Var
 	b    *Var
 	op   string
 }
 
-// Call represents a function call.
-type Call struct {
+type call struct {
 	dest *Var
 	f    *Var
 	args []*Var
@@ -37,7 +35,7 @@ func (b *Block) addInst(i interface{}) {
 
 // AddCall appends a function call op into the basic block.
 func (b *Block) AddCall(dest, f *Var, args ...*Var) {
-	b.addInst(&Call{
+	b.addInst(&call{
 		dest: dest,
 		f:    f,
 		args: args,
@@ -51,7 +49,7 @@ func (b *Block) AddAssign(dest, src *Var) {
 
 // AddUnaryOp appends a unary op into the basic block.
 func (b *Block) AddUnaryOp(dest *Var, op string, en *Var) {
-	b.addInst(&Op{
+	b.addInst(&oper{
 		dest: dest,
 		a:    nil,
 		b:    en,
@@ -61,7 +59,7 @@ func (b *Block) AddUnaryOp(dest *Var, op string, en *Var) {
 
 // AddBinaryOp appends a binary op into the basic block.
 func (b *Block) AddBinaryOp(dest, x *Var, op string, y *Var) {
-	b.addInst(&Op{
+	b.addInst(&oper{
 		dest: dest,
 		a:    x,
 		b:    y,
@@ -71,7 +69,7 @@ func (b *Block) AddBinaryOp(dest, x *Var, op string, y *Var) {
 
 func (b *Block) instStr(i interface{}) string {
 	switch i := i.(type) {
-	case *Op:
+	case *oper:
 		if i.a == nil {
 			// unary op
 			if i.op == "" {
@@ -83,7 +81,7 @@ func (b *Block) instStr(i interface{}) string {
 
 		return fmt.Sprintf("%s = %s %s %s", i.dest, i.a, i.op, i.b)
 
-	case *Call:
+	case *call:
 		ret := new(bytes.Buffer)
 		if i.dest != nil {
 			fmt.Fprintf(ret, "%s = ", i.dest)
@@ -127,7 +125,7 @@ func (b *Block) Func() *Func {
 	return b.f
 }
 
-func (b *Block) simOp(out io.Writer, i *Op) {
+func (b *Block) simOp(out io.Writer, i *oper) {
 	if i.a == nil {
 		switch i.op {
 		case "", "+":
@@ -149,7 +147,7 @@ func (b *Block) simOp(out io.Writer, i *Op) {
 	}
 }
 
-func (b *Block) simCall(out io.Writer, i *Call) {
+func (b *Block) simCall(out io.Writer, i *call) {
 	if i.f.isSymbol && i.f.modName == "<builtin>" {
 		switch i.f.symName {
 		case "print":
@@ -167,9 +165,9 @@ func (b *Block) simCall(out io.Writer, i *Call) {
 func (b *Block) sim(out io.Writer) *Block {
 	for _, i := range b.insts {
 		switch i := i.(type) {
-		case *Op:
+		case *oper:
 			b.simOp(out, i)
-		case *Call:
+		case *call:
 			b.simCall(out, i)
 		default:
 			panic("bug")

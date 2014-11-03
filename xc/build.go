@@ -20,18 +20,19 @@ type builder struct {
 	obj   *Object
 }
 
-func (b *builder) prepare() {
+func newBuilder(t *xast.Tree) *builder {
+	b := new(builder)
+	b.t = t
+
 	b.errs = parser.NewErrList()
 	b.f = ir.NewFunc()
 	b.b = b.f.NewBlock()
 	b.scope = newScope()
-	b.scope.push() // buildin scope
 
-	// TODO: fix this
-	t := newFuncType(typeVoid, typeInt)
+	b.scope.push() // buildin scope
 	v := &enode{
 		name: "print",
-		t:    t,
+		t:    newFuncType(typeVoid, typeInt),
 		v:    ir.NewConstSym("<builtin>", "print"),
 	}
 	s := &symbol{
@@ -40,6 +41,8 @@ func (b *builder) prepare() {
 		v:    v,
 	}
 	b.scope.put(s)
+
+	return b
 }
 
 // builds a function
