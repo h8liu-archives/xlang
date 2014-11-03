@@ -16,9 +16,11 @@ The plan is:
 The goal is to make all the code written in this project comprehensible for
 human programmers and readers. At least, all the code that is written in the
 new language needs to be comprehensible for human. I will put some certain care
-on the language design and project architecture so that it can be as
+on the language design and the project architecture so that it can be as
 comprehensible as possible. I will also ask my friends to review my code and
-see evaluate if the code is comprehensible or not.
+evaluate if the code is comprehensible or not.
+
+I plan to have a coding blog that logs the entire procedure.
 
 I have several previous tries including [E8](http://github.com/e8vm) and
 [Luna](http://github.com/h8liu/luna).  E8 is a simple toy architecture, and
