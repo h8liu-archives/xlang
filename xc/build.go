@@ -12,7 +12,7 @@ import (
 var voidNode = &enode{t: typeVoid, v: ir.Void}
 
 type builder struct {
-	t     *xast.Tree
+	root  *xast.Block
 	errs  *parser.ErrList
 	scope *scope
 	f     *ir.Func
@@ -20,9 +20,9 @@ type builder struct {
 	obj   *Object
 }
 
-func newBuilder(t *xast.Tree) *builder {
+func newBuilder(t *xast.Block) *builder {
 	b := new(builder)
-	b.t = t
+	b.root = t
 
 	b.errs = parser.NewErrList()
 	b.f = ir.NewFunc()
@@ -49,8 +49,7 @@ func newBuilder(t *xast.Tree) *builder {
 func (b *builder) buildFunc() {
 	b.scope.push()
 
-	block := b.t.Root().(*xast.Block)
-	for _, s := range block.Nodes {
+	for _, s := range b.root.Nodes {
 		b.buildStmt(s)
 	}
 

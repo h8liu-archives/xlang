@@ -4,23 +4,21 @@ import (
 	"github.com/h8liu/xlang/parser"
 )
 
-// ASTNode basically could be anything
+// Node basically could be anything
 type Node interface{}
 
-// AST presents the xlang abstract syntax tree.
+// Tree presents the xlang abstract syntax tree.
 type Tree struct {
 	errs *parser.ErrList
 	s    *parser.EntryScanner
-
-	root Node
 }
 
-// ASTBlock is a scoped block.
+// Block is a scoped block.
 type Block struct {
 	Nodes []Node
 }
 
-// ASTModule is a module that consists of top-level declarations.
+// Module is a module that consists of top-level declarations.
 type Module struct {
 }
 
@@ -31,26 +29,29 @@ func newTree() *Tree {
 	return ret
 }
 
-func NewStmts(b *parser.Block) (*Tree, *parser.ErrList) {
+// NewStmts converts a parser block into a tree of statements.
+func NewStmts(b *parser.Block) (*Block, *parser.ErrList) {
 	ret := newTree()
 	root := new(Block)
 	ret.parseStmts(root, b)
-	ret.root = root
 
-	return ret, ret.errs
+	if !ret.errs.Empty() {
+		return nil, ret.errs
+	}
+	return root, nil
 }
 
-func NewExprs(b *parser.Block) (*Tree, *parser.ErrList) {
+// NewExprs converts a parser block into a tree of expressions.
+func NewExprs(b *parser.Block) (*Block, *parser.ErrList) {
 	ret := newTree()
 	root := new(Block)
 	ret.parseExprs(root, b)
-	ret.root = root
 
-	return ret, ret.errs
+	if !ret.errs.Empty() {
+		return nil, ret.errs
+	}
+	return root, nil
 }
-
-func (t *Tree) Root() Node            { return t.root }
-func (t *Tree) Errs() *parser.ErrList { return t.errs }
 
 func (t *Tree) parseProg(ret *Module, b *parser.Block) {
 	panic("todo")

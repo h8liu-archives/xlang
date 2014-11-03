@@ -31,13 +31,8 @@ func (s *Source) Compile() (*Object, *parser.ErrList) {
 // CompileFunc treats the file as the body of the main function.
 // It equivalent as wrapping the body inside a `func main() { }`.
 func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
-	block, errs := parser.Parse(s.File, s.Reader)
+	tree, errs := s.BuildStmtsAST()
 	if errs != nil {
-		return nil, errs
-	}
-
-	tree, errs := xast.NewStmts(block)
-	if !errs.Empty() {
 		return nil, errs
 	}
 
@@ -60,11 +55,11 @@ func (s *Source) BuildExprsAST() (*xast.Block, *parser.ErrList) {
 	}
 
 	tree, errs := xast.NewExprs(block)
-	if !errs.Empty() {
+	if errs != nil {
 		return nil, errs
 	}
 
-	return tree.Root().(*xast.Block), nil
+	return tree, nil
 }
 
 // BuildStmtsAST builds the source as an .xstmt file, where
@@ -76,9 +71,9 @@ func (s *Source) BuildStmtsAST() (*xast.Block, *parser.ErrList) {
 	}
 
 	tree, errs := xast.NewStmts(block)
-	if !errs.Empty() {
+	if errs != nil {
 		return nil, errs
 	}
 
-	return tree.Root().(*xast.Block), nil
+	return tree, nil
 }

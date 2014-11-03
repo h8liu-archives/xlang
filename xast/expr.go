@@ -8,14 +8,14 @@ import (
 	"github.com/h8liu/xlang/prt"
 )
 
-// ASTOpExpr describes an expression with a binary operation.
+// OpExpr describes an expression with a binary operation.
 type OpExpr struct {
 	A  Node // when A is nil, it is a unary expr
 	Op *parser.Tok
 	B  Node
 }
 
-// ASTCall describes a function call.
+// Call describes a function call.
 type Call struct {
 	Func   Node
 	Paras  []Node
