@@ -1,8 +1,6 @@
 package ir
 
 type Func struct {
-	frameSize uint32
-
 	blocks []*Block
 	vars   []*Var
 }
@@ -31,14 +29,13 @@ func (f *Func) StackAlloc(size uint32) *Var {
 	ret := new(Var)
 	ret.onHeap = false
 	ret.size = size
-	ret.addr = f.frameSize
+	ret.index = len(f.vars)
 
 	// TODO: stack alloc alignment
 	if size != 4 {
 		panic("not implemented")
 	}
 
-	f.frameSize += size
 	f.vars = append(f.vars, ret)
 	return ret
 }

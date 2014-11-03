@@ -13,6 +13,7 @@ type Var struct {
 
 	onHeap bool // if it is allocated on the heap or the stack
 	size   uint32
+	index  int
 	addr   uint32
 
 	isConst bool  // if it is a just a constant
@@ -33,9 +34,9 @@ func (v *Var) String() string {
 	} else if v.isConst {
 		fmt.Fprintf(ret, "C#%d", v.value)
 	} else if v.onHeap {
-		fmt.Fprintf(ret, "H#%d", v.addr)
+		fmt.Fprintf(ret, "H#%d", v.index)
 	} else {
-		fmt.Fprintf(ret, "S#%d", v.addr)
+		fmt.Fprintf(ret, "#%d", v.index)
 	}
 
 	if v.Name != "" {
