@@ -1,4 +1,4 @@
-package xc
+package xast
 
 import (
 	"bytes"
@@ -7,36 +7,36 @@ import (
 	"github.com/h8liu/xlang/prt"
 )
 
-// ASTVarDecl variable declaration statement.
-type ASTVarDecl struct {
+// VarDecl variable declaration statement.
+type VarDecl struct {
 	Names []*parser.Tok
-	Exprs []ASTNode
+	Exprs []Node
 	Pos   *parser.Pos
 }
 
-// ASTAssign is an assignment statement.
-type ASTAssign struct {
-	LHS []ASTNode
-	RHS []ASTNode
+// Assign is an assignment statement.
+type Assign struct {
+	LHS []Node
+	RHS []Node
 	Pos *parser.Pos
 }
 
-// ASTExprStmt is an expression statement.
-type ASTExprStmt struct {
-	Expr ASTNode
+// ExprStmt is an expression statement.
+type ExprStmt struct {
+	Expr Node
 }
 
-func (ast *AST) parseIdentList() []*parser.Tok {
+func (t *Tree) parseIdentList() []*parser.Tok {
 	var ret []*parser.Tok
 	for {
-		if !ast.s.SeeIdent() {
-			ast.logExpectIdent()
+		if !t.s.SeeIdent() {
+			t.logExpectIdent()
 			return nil
 		}
-		t := ast.s.Accept()
-		ret = append(ret, t)
+		tok := t.s.Accept()
+		ret = append(ret, tok)
 
-		if !ast.s.AcceptOp(",") {
+		if !t.s.AcceptOp(",") {
 			break
 		}
 	}
@@ -44,63 +44,63 @@ func (ast *AST) parseIdentList() []*parser.Tok {
 	return ret
 }
 
-func (ast *AST) parseStmt() ASTNode {
-	if ast.s.SeeBlock() {
+func (t *Tree) parseStmt() Node {
+	if t.s.SeeBlock() {
 		panic("todo: parsing a block statement")
-	} else if ast.s.AcceptKeyword("var") {
-		if ast.s.SeeBlock() {
+	} else if t.s.AcceptKeyword("var") {
+		if t.s.SeeBlock() {
 			panic("todo: parsing var decl block")
 		}
 
-		idents := ast.parseIdentList()
+		idents := t.parseIdentList()
 		if idents == nil {
 			return nil
 		}
 
-		if ast.s.AcceptOp("=") {
-			p := ast.s.Pos()
+		if t.s.AcceptOp("=") {
+			p := t.s.Pos()
 
-			exprs := ast.parseExprList()
+			exprs := t.parseExprList()
 			if exprs == nil {
 				return nil
 			}
 
-			return &ASTVarDecl{
+			return &VarDecl{
 				Names: idents,
 				Exprs: exprs,
 				Pos:   p,
 			}
 		}
 
-		return &ASTVarDecl{
+		return &VarDecl{
 			Names: idents,
-			Pos:   ast.s.Pos(),
+			Pos:   t.s.Pos(),
 		}
 	} else {
-		exprs := ast.parseExprList()
+		exprs := t.parseExprList()
 		if exprs == nil {
 			return nil
 		}
 
-		if ast.s.AcceptOp("=") {
-			p := ast.s.Pos()
-			rhs := ast.parseExprList()
-			return &ASTAssign{
+		if t.s.AcceptOp("=") {
+			p := t.s.Pos()
+			rhs := t.parseExprList()
+			return &Assign{
 				LHS: exprs,
 				RHS: rhs,
 				Pos: p,
 			}
 		} else if len(exprs) > 1 {
-			ast.errs.Log(ast.s.Pos(), "unexpected end of statement, expect = or :=")
+			t.errs.Log(t.s.Pos(), "unexpected end of statement, expect = or :=")
 			return nil
 		}
 
-		return &ASTExprStmt{Expr: exprs[0]}
+		return &ExprStmt{Expr: exprs[0]}
 	}
 }
 
 // StmtStr returns the statement representation of a statement.
-func StmtStr(node ASTNode) string {
+func StmtStr(node Node) string {
 	buf := new(bytes.Buffer)
 	p := prt.New(buf)
 	PrintStmt(p, node)
@@ -108,20 +108,20 @@ func StmtStr(node ASTNode) string {
 }
 
 // PrintStmt prints the statement string with the printer.
-func PrintStmt(p *prt.Printer, node ASTNode) {
+func PrintStmt(p *prt.Printer, node Node) {
 	switch n := node.(type) {
-	case *ASTAssign:
+	case *Assign:
 		printExprList(p, n.LHS)
 		p.Print(" = ")
 		printExprList(p, n.RHS)
-	case *ASTVarDecl:
+	case *VarDecl:
 		p.Printf("var ")
 		printIdentList(p, n.Names)
 		if n.Exprs != nil {
 			p.Printf(" = ")
 			printExprList(p, n.Exprs)
 		}
-	case *ASTExprStmt:
+	case *ExprStmt:
 		PrintExpr(p, n.Expr)
 	default:
 		p.Print("/* invalid statement */")

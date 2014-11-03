@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/h8liu/xlang/parser"
+	"github.com/h8liu/xlang/xast"
 )
 
 // Source defines the context required to compile a single source file.
@@ -35,49 +36,51 @@ func (s *Source) CompileFunc() (*Object, *parser.ErrList) {
 		return nil, errs
 	}
 
-	ast := newStmtsAST(block)
-	if !ast.errs.Empty() {
-		return nil, ast.errs
+	tree, errs := xast.NewStmts(block)
+	if !errs.Empty() {
+		return nil, errs
 	}
 
-	ast.prepareBuild()
-	ast.buildFunc()
-	if !ast.errs.Empty() {
-		return nil, ast.errs
+	b := new(builder)
+	b.t = tree
+	b.prepare()
+	b.buildFunc()
+	if !b.errs.Empty() {
+		return nil, b.errs
 	}
 
-	return ast.obj, nil
+	return b.obj, nil
 }
 
 // BuildExprsAST builds the source as an .xexpr file, where
 // each statement is an expression.
 // This is useful for testing expression parsing.
-func (s *Source) BuildExprsAST() (*ASTBlock, *parser.ErrList) {
+func (s *Source) BuildExprsAST() (*xast.Block, *parser.ErrList) {
 	block, errs := parser.Parse(s.File, s.Reader)
 	if errs != nil {
 		return nil, errs
 	}
 
-	ast := newExprsAST(block)
-	if !ast.errs.Empty() {
-		return nil, ast.errs
+	tree, errs := xast.NewExprs(block)
+	if !errs.Empty() {
+		return nil, errs
 	}
 
-	return ast.root.(*ASTBlock), nil
+	return tree.Root().(*xast.Block), nil
 }
 
 // BuildStmtsAST builds the source as an .xstmt file, where
 // the file works like a function body.
-func (s *Source) BuildStmtsAST() (*ASTBlock, *parser.ErrList) {
+func (s *Source) BuildStmtsAST() (*xast.Block, *parser.ErrList) {
 	block, errs := parser.Parse(s.File, s.Reader)
 	if errs != nil {
 		return nil, errs
 	}
 
-	ast := newStmtsAST(block)
-	if !ast.errs.Empty() {
-		return nil, ast.errs
+	tree, errs := xast.NewStmts(block)
+	if !errs.Empty() {
+		return nil, errs
 	}
 
-	return ast.root.(*ASTBlock), nil
+	return tree.Root().(*xast.Block), nil
 }

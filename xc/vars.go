@@ -5,8 +5,8 @@ import (
 )
 
 // newVar allocates a named variable from the current function's stack
-func (ast *AST) newVar(name string, t *xtype) *enode {
-	ret := ast.newTemp(t)
+func (b *builder) newVar(name string, t *xtype) *enode {
+	ret := b.newTemp(t)
 
 	ret.v.Name = name
 	ret.name = name
@@ -15,10 +15,10 @@ func (ast *AST) newVar(name string, t *xtype) *enode {
 }
 
 // newTemp allocates an unamed temp variable from the current function's stack
-func (ast *AST) newTemp(t *xtype) *enode {
+func (b *builder) newTemp(t *xtype) *enode {
 	ret := new(enode)
 	ret.t = t
-	ret.v = ast.f.StackAlloc(t.size())
+	ret.v = b.f.StackAlloc(t.size())
 
 	return ret
 }

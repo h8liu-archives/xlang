@@ -6,15 +6,26 @@ import (
 
 	"github.com/h8liu/xlang/ir"
 	"github.com/h8liu/xlang/parser"
+	"github.com/h8liu/xlang/xast"
 )
 
 var voidNode = &enode{t: typeVoid, v: ir.Void}
 
-func (ast *AST) prepareBuild() {
-	ast.f = ir.NewFunc()
-	ast.b = ast.f.NewBlock()
-	ast.scope = newScope()
-	ast.scope.push() // buildin scope
+type builder struct {
+	t     *xast.Tree
+	errs  *parser.ErrList
+	scope *scope
+	f     *ir.Func
+	b     *ir.Block
+	obj   *Object
+}
+
+func (b *builder) prepare() {
+	b.errs = parser.NewErrList()
+	b.f = ir.NewFunc()
+	b.b = b.f.NewBlock()
+	b.scope = newScope()
+	b.scope.push() // buildin scope
 
 	// TODO: fix this
 	t := newFuncType(typeVoid, typeInt)
@@ -28,44 +39,44 @@ func (ast *AST) prepareBuild() {
 		pos:  nil,
 		v:    v,
 	}
-	ast.scope.put(s)
+	b.scope.put(s)
 }
 
 // builds a function
-func (ast *AST) buildFunc() {
-	ast.scope.push()
+func (b *builder) buildFunc() {
+	b.scope.push()
 
-	b := ast.root.(*ASTBlock)
-	for _, s := range b.Nodes {
-		ast.buildStmt(s)
+	block := b.t.Root().(*xast.Block)
+	for _, s := range block.Nodes {
+		b.buildStmt(s)
 	}
 
-	ast.scope.pop()
+	b.scope.pop()
 
-	ast.obj = new(Object)
-	ast.obj.f = ast.f
-	ast.obj.b = ast.b
+	b.obj = new(Object)
+	b.obj.f = b.f
+	b.obj.b = b.b
 }
 
 // builds an expression
-func (ast *AST) buildExpr(s ASTNode) *enode {
+func (b *builder) buildExpr(s xast.Node) *enode {
 	switch n := s.(type) {
-	case *ASTOpExpr:
-		return ast.buildOp(n)
-	case *ASTCall:
-		return ast.buildCall(n)
+	case *xast.OpExpr:
+		return b.buildOp(n)
+	case *xast.Call:
+		return b.buildCall(n)
 	case *parser.Tok:
 		if n.Type == parser.TypeIdent {
-			return ast.buildVarRef(n)
+			return b.buildVarRef(n)
 		} else if n.Type == parser.TypeInt {
-			return ast.buildIntConst(n)
+			return b.buildIntConst(n)
 		}
 	}
 	return nil
 }
 
 // builds an operation
-func (ast *AST) buildOp(n *ASTOpExpr) *enode {
+func (b *builder) buildOp(n *xast.OpExpr) *enode {
 	const arithErr = "arithmetic operation on non-number"
 	const typeErr = "type mismatch on operation %q"
 
@@ -73,26 +84,26 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 		// unary op
 		switch n.Op.Lit {
 		case "+":
-			ret := ast.buildExpr(n.B)
+			ret := b.buildExpr(n.B)
 			if ret == nil {
 				return nil
 			}
 			if !ret.typ().isNum() {
-				ast.errs.Log(n.Op.Pos, arithErr)
+				b.errs.Log(n.Op.Pos, arithErr)
 				return nil
 			}
 			return ret
 		case "-":
-			b := ast.buildExpr(n.B)
-			if b == nil {
+			y := b.buildExpr(n.B)
+			if y == nil {
 				return nil
 			}
-			if !b.typ().isNum() {
-				ast.errs.Log(n.Op.Pos, arithErr)
+			if !y.typ().isNum() {
+				b.errs.Log(n.Op.Pos, arithErr)
 				return nil
 			}
-			ret := ast.newTemp(b.typ())
-			ast.b.AddUnaryOp(ret.v, "-", b.v)
+			ret := b.newTemp(y.typ())
+			b.b.AddUnaryOp(ret.v, "-", y.v)
 			return ret
 		default:
 			panic("unknown op")
@@ -101,22 +112,22 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 
 	switch n.Op.Lit {
 	case "+", "-":
-		a := ast.buildExpr(n.A)
-		b := ast.buildExpr(n.B)
-		if a == nil || b == nil {
+		x := b.buildExpr(n.A)
+		y := b.buildExpr(n.B)
+		if x == nil || y == nil {
 			return nil
 		}
-		if !a.typ().isNum() {
-			ast.errs.Log(n.Op.Pos, arithErr)
+		if !x.typ().isNum() {
+			b.errs.Log(n.Op.Pos, arithErr)
 			return nil
 		}
-		if !a.typ().numEquals(b.typ()) {
-			ast.errs.Log(n.Op.Pos, typeErr, n.Op.Lit)
+		if !x.typ().numEquals(y.typ()) {
+			b.errs.Log(n.Op.Pos, typeErr, n.Op.Lit)
 			return nil
 		}
 
-		ret := ast.newTemp(a.typ())
-		ast.b.AddBinaryOp(ret.v, a.v, n.Op.Lit, b.v)
+		ret := b.newTemp(x.typ())
+		b.b.AddBinaryOp(ret.v, x.v, n.Op.Lit, y.v)
 		return ret
 	default:
 		panic("unknown op")
@@ -124,15 +135,15 @@ func (ast *AST) buildOp(n *ASTOpExpr) *enode {
 }
 
 // builds a function call
-func (ast *AST) buildCall(n *ASTCall) *enode {
-	f := ast.buildExpr(n.Func)
+func (b *builder) buildCall(n *xast.Call) *enode {
+	f := b.buildExpr(n.Func)
 	if f == nil {
 		return nil
 	}
 
 	var args []*ir.Var
 	for _, p := range n.Paras {
-		r := ast.buildExpr(p)
+		r := b.buildExpr(p)
 		if r == nil {
 			return nil
 		}
@@ -142,20 +153,20 @@ func (ast *AST) buildCall(n *ASTCall) *enode {
 	// TODO: function signature type check
 	// we now assume it is always print with one parameter
 	if len(n.Paras) != 1 {
-		ast.errs.Log(n.Lparen.Pos, "print takes exactly one paramter")
+		b.errs.Log(n.Lparen.Pos, "print takes exactly one paramter")
 		return nil
 	}
 
-	ast.b.AddCall(ir.Void, f.v, args...)
+	b.b.AddCall(ir.Void, f.v, args...)
 
 	return voidNode
 }
 
 // builds a variable reference
-func (ast *AST) buildVarRef(t *parser.Tok) *enode {
-	found := ast.scope.find(t.Lit)
+func (b *builder) buildVarRef(t *parser.Tok) *enode {
+	found := b.scope.find(t.Lit)
 	if found == nil {
-		ast.errs.Log(t.Pos, "%s not defined", t.Lit)
+		b.errs.Log(t.Pos, "%s not defined", t.Lit)
 		return nil
 	}
 
@@ -166,15 +177,15 @@ func (ast *AST) buildVarRef(t *parser.Tok) *enode {
 // for integer within int32 range, the type is int32
 // otherwise, for integer within uint32 range, the type is uint32
 // otherwise, it is out of range and invalid
-func (ast *AST) buildIntConst(t *parser.Tok) *enode {
+func (b *builder) buildIntConst(t *parser.Tok) *enode {
 	v, e := strconv.ParseInt(t.Lit, 0, 64)
 	if e != nil {
-		ast.errs.Log(t.Pos, "invalid integer")
+		b.errs.Log(t.Pos, "invalid integer")
 		return nil
 	}
 
 	if v > math.MaxUint32 || v < math.MinInt32 {
-		ast.errs.Log(t.Pos, "integer out of range")
+		b.errs.Log(t.Pos, "integer out of range")
 		return nil
 	}
 
@@ -186,11 +197,11 @@ func (ast *AST) buildIntConst(t *parser.Tok) *enode {
 }
 
 // build assignment
-func (ast *AST) buildAssign(n *ASTAssign) {
+func (b *builder) buildAssign(n *xast.Assign) {
 	nleft := len(n.LHS)
 	nright := len(n.RHS)
 	if nleft != nright {
-		ast.errs.Log(n.Pos, "expect %d on left hand side, got %d",
+		b.errs.Log(n.Pos, "expect %d on left hand side, got %d",
 			nright, nleft,
 		)
 		return
@@ -198,7 +209,7 @@ func (ast *AST) buildAssign(n *ASTAssign) {
 
 	var temps []*enode
 	for _, expr := range n.RHS {
-		t := ast.buildExpr(expr)
+		t := b.buildExpr(expr)
 		if t == nil {
 			return
 		}
@@ -206,13 +217,13 @@ func (ast *AST) buildAssign(n *ASTAssign) {
 	}
 
 	for i, d := range n.LHS {
-		dest := ast.buildExpr(d)
+		dest := b.buildExpr(d)
 		if dest == nil {
 			return
 		}
 
 		if !dest.addressable() {
-			ast.errs.Log(n.Pos, "assigning to not addressable")
+			b.errs.Log(n.Pos, "assigning to not addressable")
 			return
 		}
 
@@ -220,26 +231,26 @@ func (ast *AST) buildAssign(n *ASTAssign) {
 		src := temps[i]
 		srcType := src.typ()
 		if !srcType.canAssignTo(destType) {
-			ast.errs.Log(n.Pos, "cannot assign %s to %s", srcType, destType)
+			b.errs.Log(n.Pos, "cannot assign %s to %s", srcType, destType)
 			return
 		}
 
-		ast.b.AddAssign(dest.v, src.v)
+		b.b.AddAssign(dest.v, src.v)
 	}
 }
 
 // build variable declaration
-func (ast *AST) buildVarDecl(n *ASTVarDecl) {
+func (b *builder) buildVarDecl(n *xast.VarDecl) {
 	var srcs []*enode
 
 	// evaluate the expressions first
 	if n.Exprs != nil {
 		if len(n.Exprs) != len(n.Names) {
-			ast.errs.Log(n.Pos, "number of expressions mismatch")
+			b.errs.Log(n.Pos, "number of expressions mismatch")
 		} else {
 			srcs = make([]*enode, len(n.Exprs))
 			for i, expr := range n.Exprs {
-				e := ast.buildExpr(expr)
+				e := b.buildExpr(expr)
 				if e == nil {
 					srcs = nil
 					break
@@ -251,24 +262,24 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 
 	// now we declare the names
 	for i, name := range n.Names {
-		pre := ast.scope.findTop(name.Lit)
+		pre := b.scope.findTop(name.Lit)
 		if pre != nil {
 			if pre.pos == nil {
 				panic("trying redeclare a builtin symbol?")
 			}
-			ast.errs.Log(name.Pos, "%s already declared", name.Lit)
-			ast.errs.Log(pre.pos, "  previously declared here")
+			b.errs.Log(name.Pos, "%s already declared", name.Lit)
+			b.errs.Log(pre.pos, "  previously declared here")
 			return
 		}
 
 		typ := typeInt // TODO: parse the type
-		v := ast.newVar(name.Lit, typ)
+		v := b.newVar(name.Lit, typ)
 		sym := &symbol{
 			name: name.Lit,
 			pos:  name.Pos,
 			v:    v,
 		}
-		ast.scope.put(sym)
+		b.scope.put(sym)
 
 		if srcs != nil {
 			// have init list, then assign it
@@ -277,31 +288,32 @@ func (ast *AST) buildVarDecl(n *ASTVarDecl) {
 			destType := v.typ()
 
 			if !srcType.canAssignTo(destType) {
-				ast.errs.Log(name.Pos, "cannot assign %s to %s", srcType, destType)
+				b.errs.Log(name.Pos, "cannot assign %s to %s", srcType, destType)
 				return
 			}
 
-			ast.b.AddAssign(v.v, src.v)
+			b.b.AddAssign(v.v, src.v)
 		} else {
 			// init with zero value
-			ast.b.AddAssign(v.v, newZero(v.typ()).v)
+			b.b.AddAssign(v.v, newZero(v.typ()).v)
 		}
 	}
 }
 
-func (ast *AST) buildExprStmt(n *ASTExprStmt) {
-	ast.buildExpr(n.Expr)
+func (b *builder) buildExprStmt(n *xast.ExprStmt) {
+	b.buildExpr(n.Expr)
+	// TODO: check if the expression is a call
 }
 
 // build a statement
-func (ast *AST) buildStmt(s ASTNode) {
+func (b *builder) buildStmt(s xast.Node) {
 	switch n := s.(type) {
-	case *ASTAssign:
-		ast.buildAssign(n)
-	case *ASTVarDecl:
-		ast.buildVarDecl(n)
-	case *ASTExprStmt:
-		ast.buildExprStmt(n)
+	case *xast.Assign:
+		b.buildAssign(n)
+	case *xast.VarDecl:
+		b.buildVarDecl(n)
+	case *xast.ExprStmt:
+		b.buildExprStmt(n)
 	default:
 		panic("invalid statement")
 	}

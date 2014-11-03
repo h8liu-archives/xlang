@@ -1,6 +1,7 @@
 package xc_test
 
 import (
+	"github.com/h8liu/xlang/xast"
 	"github.com/h8liu/xlang/xc"
 
 	"testing"
@@ -16,7 +17,7 @@ func TestExpr(t *testing.T) {
 			t.Errorf("not single expr: %q", s)
 		} else {
 			n := b.Nodes[0]
-			res := xc.ExprStr(n)
+			res := xast.ExprStr(n)
 			if res != e {
 				t.Errorf("parsing expr %q, got %q, expect %q",
 					s, res, e,
