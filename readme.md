@@ -35,7 +35,7 @@ programming langauge first.
 # Design Thoughts
 
 I like Go language very much, and in my opinion, it is the most readable and
-comprehensible language in the world. 
+comprehensible language in the world, for these features:
 
 - It is a procedural language, which means the program describes what it does
   in the same way that most people think about algorithms: as steps, but not
