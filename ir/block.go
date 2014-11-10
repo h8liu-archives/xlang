@@ -3,7 +3,6 @@ package ir
 import (
 	"bytes"
 	"fmt"
-	"io"
 
 	"github.com/h8liu/xlang/prt"
 )
@@ -123,56 +122,4 @@ func (b *Block) Print(p *prt.Printer) {
 // Func returns the function that this block belongs to.
 func (b *Block) Func() *Func {
 	return b.f
-}
-
-func (b *Block) simOp(out io.Writer, i *oper) {
-	if i.a == nil {
-		switch i.op {
-		case "", "+":
-			i.dest.value = i.b.value
-		case "-":
-			i.dest.value = -i.b.value
-		default:
-			panic("bug")
-		}
-	} else {
-		switch i.op {
-		case "+":
-			i.dest.value = i.a.value + i.b.value
-		case "-":
-			i.dest.value = i.a.value - i.b.value
-		default:
-			panic("bug")
-		}
-	}
-}
-
-func (b *Block) simCall(out io.Writer, i *call) {
-	if i.f.isSymbol && i.f.modName == "<builtin>" {
-		switch i.f.symName {
-		case "print":
-			for _, a := range i.args {
-				fmt.Fprintln(out, a.value)
-			}
-		default:
-			panic("bug")
-		}
-	} else {
-		panic("todo")
-	}
-}
-
-func (b *Block) sim(out io.Writer) *Block {
-	for _, i := range b.insts {
-		switch i := i.(type) {
-		case *oper:
-			b.simOp(out, i)
-		case *call:
-			b.simCall(out, i)
-		default:
-			panic("bug")
-		}
-	}
-
-	return nil // TODO return next block
 }
