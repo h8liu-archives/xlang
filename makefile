@@ -2,6 +2,8 @@
 
 all:
 	go install -v ./...
+
+www:
 	make -C www --no-print-directory
 
 rall:
