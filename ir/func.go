@@ -7,7 +7,10 @@ import (
 // Func is an IR function unit.
 type Func struct {
 	blocks []*Block
-	vars   []*Var
+
+	rets []*Var
+	args []*Var
+	vars []*Var
 }
 
 // NewFunc creates a new IR function unit.
