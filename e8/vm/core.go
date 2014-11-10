@@ -1,9 +1,9 @@
 package vm
 
 import (
-	"e8vm.net/e8/inst"
-	"e8vm.net/e8/mem"
-	"e8vm.net/e8/regs"
+	"github.com/h8liu/xlang/e8/inst"
+	"github.com/h8liu/xlang/e8/mem"
+	"github.com/h8liu/xlang/e8/regs"
 )
 
 /*

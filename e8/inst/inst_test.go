@@ -3,9 +3,9 @@ package inst_test
 import (
 	"testing"
 
-	. "e8vm.net/e8/inst"
-	"e8vm.net/e8/mem"
-	"e8vm.net/e8/vm"
+	. "github.com/h8liu/xlang/e8/inst"
+	"github.com/h8liu/xlang/e8/mem"
+	"github.com/h8liu/xlang/e8/vm"
 )
 
 func TestSingleInst(t *testing.T) {

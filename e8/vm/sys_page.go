@@ -3,7 +3,7 @@ package vm
 import (
 	"io"
 
-	"e8vm.net/e8/mem"
+	"github.com/h8liu/xlang/e8/mem"
 )
 
 // SysPage is a special system page that is always mapped to address 0.

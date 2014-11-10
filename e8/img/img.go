@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 
-	"e8vm.net/e8/mem"
-	"e8vm.net/e8/vm"
+	"github.com/h8liu/xlang/e8/mem"
+	"github.com/h8liu/xlang/e8/vm"
 )
 
 // Make makes a virtual machine from an input stream.

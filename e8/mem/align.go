@@ -1,7 +1,7 @@
 package mem
 
 import (
-	"e8vm.net/e8/align"
+	"github.com/h8liu/xlang/e8/align"
 )
 
 // Align is a page wrapper that takes a page and perform aligned reads and
