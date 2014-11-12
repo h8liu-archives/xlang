@@ -37,6 +37,7 @@ func (g *E8Gen) GenFunc(f *Func) {
 
 	// $30 is stack counter
 	g.frameSize = g.arrangeStack(f)
+	// TODO: check frameSize is not too large
 	g.genFuncPrologue(f)
 
 	for _, b := range f.blocks {
@@ -53,9 +54,8 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 		offset += v.size
 	}
 
-	// parameters that were pushed on stack
+	// parameters that were pushed on the stack
 	// by the caller
-	push(g.retAddr)
 	if len(f.rets) > 3 {
 		for _, v := range f.rets[3:] {
 			push(v)
@@ -67,6 +67,8 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 		}
 	}
 
+	push(g.retAddr)
+	// extra stack spaces for saving local variables
 	for _, v := range f.rets[:3] {
 		push(v)
 	}
@@ -81,6 +83,8 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 }
 
 func (g *E8Gen) genFuncPrologue(f *Func) {
+	// push the registers on statck
+
 	panic("todo")
 }
 
