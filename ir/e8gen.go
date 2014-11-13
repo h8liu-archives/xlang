@@ -112,6 +112,7 @@ func (g *E8Gen) addSimpleOp(i *oper, funct uint8) {
 	g.storeReg(regT1, i.dest)
 }
 
+// GenFunc generates the instructions for a function.
 func (g *E8Gen) GenFunc(f *Func) {
 	if len(f.blocks) == 0 {
 		return
@@ -231,8 +232,7 @@ func (g *E8Gen) genFuncEpilogue(f *Func) {
 		g.loadReg(uint8(i+1), v)
 	}
 
-	g.loadReg(regRET, g.retAddr)
-	g.addRinst(regRET, 0, regPC, e8i.FnAdd) // jump to reg
+	g.loadReg(regPC, g.retAddr)
 }
 
 func (g *E8Gen) genBlock(b *Block) {
