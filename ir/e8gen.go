@@ -1,8 +1,28 @@
 package ir
 
+import (
+	e8i "github.com/h8liu/xlang/e8/inst"
+)
+
+type e8Inst struct {
+	i uint32
+
+	lateBind         bool
+	bindAddr         uint32
+	bindMod, bindSym string
+}
+
+func newE8Inst(i uint32) *e8Inst {
+	ret := new(e8Inst)
+	ret.i = i
+	return ret
+}
+
 type E8Gen struct {
 	retAddr   *Var
 	frameSize uint32
+
+	insts []*e8Inst
 }
 
 func NewE8Gen() *E8Gen {
@@ -28,7 +48,51 @@ when calling
 
 const (
 	e8AddrSize = 4
+
+	regSP  = 29
+	regT1  = 4
+	regT2  = 5
+	regRET = 30
+	regPC  = 31
 )
+
+func (g *E8Gen) addInst(i uint32) {
+	inst := newE8Inst(i)
+	g.insts = append(g.insts, inst)
+}
+
+func (g *E8Gen) storeReg(r uint8, v *Var) {
+	g.addInst(uint32(e8i.Iinst(e8i.OpSw, regSP, r, uint16(v.addr))))
+}
+
+func (g *E8Gen) loadReg(r uint8, v *Var) {
+	g.addInst(uint32(e8i.Iinst(e8i.OpLw, regSP, r, uint16(v.addr))))
+}
+
+func (g *E8Gen) addRinst(s, t, d, funct uint8) {
+	g.addInst(uint32(e8i.Rinst(s, t, d, funct)))
+}
+
+func (g *E8Gen) addSPChange(d int16) {
+	g.addInst(uint32(e8i.Iinst(e8i.OpAddi, regSP, regSP, uint16(d))))
+}
+
+func (g *E8Gen) addJalSym(mod, sym string) {
+	inst := newE8Inst(uint32(e8i.Jinst(e8i.OpJal, 0)))
+
+	inst.lateBind = true
+	inst.bindMod = mod
+	inst.bindSym = sym
+
+	g.insts = append(g.insts, inst)
+}
+
+func (g *E8Gen) addSimpleOp(i *oper, funct uint8) {
+	g.loadReg(regT1, i.a)
+	g.loadReg(regT2, i.b)
+	g.addRinst(regT1, regT2, regT1, funct)
+	g.storeReg(regT1, i.dest)
+}
 
 func (g *E8Gen) GenFunc(f *Func) {
 	if len(f.blocks) == 0 {
@@ -37,12 +101,17 @@ func (g *E8Gen) GenFunc(f *Func) {
 
 	// $30 is stack counter
 	g.frameSize = g.arrangeStack(f)
-	// TODO: check frameSize is not too large
+	if g.frameSize > 0x7fff {
+		panic("frame too large")
+	}
+
 	g.genFuncPrologue(f)
 
 	for _, b := range f.blocks {
 		g.genBlock(b)
 	}
+
+	g.genFuncEpilogue(f)
 }
 
 func (g *E8Gen) arrangeStack(f *Func) uint32 {
@@ -50,6 +119,9 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 
 	offset := uint32(0)
 	push := func(v *Var) {
+		if v.size != e8AddrSize {
+			panic("bug")
+		}
 		v.addr = offset
 		offset += v.size
 	}
@@ -67,14 +139,23 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 		}
 	}
 
-	push(g.retAddr)
 	// extra stack spaces for saving local variables
+	// that were sent in via registers
+
+	// return address
+	push(g.retAddr)
+
+	// return variables
 	for _, v := range f.rets[:3] {
 		push(v)
 	}
+
+	// arguments
 	for _, v := range f.args[:3] {
 		push(v)
 	}
+
+	// local variables
 	for _, v := range f.vars {
 		push(v)
 	}
@@ -84,8 +165,38 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 
 func (g *E8Gen) genFuncPrologue(f *Func) {
 	// push the registers on statck
+	g.storeReg(regRET, g.retAddr)
 
-	panic("todo")
+	// return values, zero them
+	for _, v := range f.rets {
+		if v.size != 4 {
+			panic("todo")
+		}
+		g.storeReg(0, v)
+	}
+
+	for i, v := range f.args[:3] {
+		if v.size != 4 {
+			panic("todo")
+		}
+		g.storeReg(uint8(i+1), v)
+	}
+
+	for _, v := range f.vars {
+		if v.size != 4 {
+			panic("todo")
+		}
+		g.storeReg(0, v)
+	}
+}
+
+func (g *E8Gen) genFuncEpilogue(f *Func) {
+	for i, v := range f.rets {
+		g.loadReg(uint8(i+1), v)
+	}
+
+	g.loadReg(regRET, g.retAddr)
+	g.addRinst(regRET, 0, regPC, e8i.FnAdd) // jump to reg
 }
 
 func (g *E8Gen) genBlock(b *Block) {
@@ -102,9 +213,48 @@ func (g *E8Gen) genBlock(b *Block) {
 }
 
 func (g *E8Gen) genOp(i *oper) {
-	panic("todo")
+	if i.a == nil {
+		switch i.op {
+		case "", "+":
+			g.loadReg(regT1, i.b)
+			g.storeReg(regT1, i.dest)
+		case "-":
+			g.loadReg(regT1, i.b)
+			g.addRinst(0, regT1, regT1, e8i.FnSub)
+			g.storeReg(regT1, i.dest)
+		default:
+			panic("bug")
+		}
+	} else {
+		switch i.op {
+		case "+":
+			g.addSimpleOp(i, e8i.FnAdd)
+		case "-":
+			g.addSimpleOp(i, e8i.FnSub)
+		default:
+			panic("bug")
+		}
+	}
 }
 
 func (g *E8Gen) genCall(i *call) {
+	if i.f.isSymbol && i.f.modName == "<builtin>" {
+		switch i.f.symName {
+		case "print":
+			if len(i.args) != 1 {
+				panic("print not taking one")
+			}
 
+			g.loadReg(1, i.args[0])
+			g.addSPChange(int16(g.frameSize))
+
+			g.addJalSym(i.f.modName, i.f.symName)
+
+			g.addSPChange(-int16(g.frameSize))
+		default:
+			panic("bug")
+		}
+	} else {
+		panic("todo")
+	}
 }
