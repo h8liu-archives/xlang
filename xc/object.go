@@ -12,6 +12,8 @@ type Object struct {
 	header *Header
 	f      *ir.Func
 	b      *ir.Block
+
+	e8 *ir.E8Gen
 }
 
 // Header returns the header of an object file.
@@ -39,5 +41,7 @@ func (obj *Object) Sim(out io.Writer) {
 func (obj *Object) GenE8() *ir.E8Gen {
 	ret := ir.NewE8Gen()
 	ret.GenFunc(obj.f)
+	obj.e8 = ret
+
 	return ret
 }
