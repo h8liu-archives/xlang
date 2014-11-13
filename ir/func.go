@@ -32,6 +32,12 @@ func (f *Func) NewBlock() *Block {
 // StackAlloc allocates a new variable on the stack.
 // It returns the frame offset.
 func (f *Func) StackAlloc(size uint32) *Var {
+	ret := f.stackAlloc(size)
+	f.vars = append(f.vars, ret)
+	return ret
+}
+
+func (f *Func) stackAlloc(size uint32) *Var {
 	if size <= 0 {
 		panic("bug")
 	}
@@ -46,7 +52,6 @@ func (f *Func) StackAlloc(size uint32) *Var {
 		panic("not implemented")
 	}
 
-	f.vars = append(f.vars, ret)
 	return ret
 }
 

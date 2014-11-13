@@ -1,6 +1,9 @@
 package ir
 
 import (
+	"fmt"
+	"io"
+
 	e8i "github.com/h8liu/xlang/e8/inst"
 )
 
@@ -62,11 +65,26 @@ func (g *E8Gen) addInst(i uint32) {
 }
 
 func (g *E8Gen) storeReg(r uint8, v *Var) {
-	g.addInst(uint32(e8i.Iinst(e8i.OpSw, regSP, r, uint16(v.addr))))
+	if !v.isConst {
+		g.addInst(uint32(e8i.Iinst(e8i.OpSw, regSP, r, uint16(v.addr))))
+	} else {
+		panic("storing const")
+	}
 }
 
 func (g *E8Gen) loadReg(r uint8, v *Var) {
-	g.addInst(uint32(e8i.Iinst(e8i.OpLw, regSP, r, uint16(v.addr))))
+	if !v.isConst {
+		g.addInst(uint32(e8i.Iinst(e8i.OpLw, regSP, r, uint16(v.addr))))
+	} else {
+		i := v.value
+		u := uint32(i) >> 16
+		if u == 0 {
+			g.addInst(uint32(e8i.Iinst(e8i.OpAddi, 0, r, uint16(i))))
+		} else {
+			g.addInst(uint32(e8i.Iinst(e8i.OpLui, 0, r, uint16(u))))
+			g.addInst(uint32(e8i.Iinst(e8i.OpAddi, r, r, uint16(i))))
+		}
+	}
 }
 
 func (g *E8Gen) addRinst(s, t, d, funct uint8) {
@@ -115,7 +133,7 @@ func (g *E8Gen) GenFunc(f *Func) {
 }
 
 func (g *E8Gen) arrangeStack(f *Func) uint32 {
-	g.retAddr = f.StackAlloc(e8AddrSize) // allocate the return address
+	g.retAddr = f.stackAlloc(e8AddrSize) // allocate the return address
 
 	offset := uint32(0)
 	push := func(v *Var) {
@@ -146,13 +164,25 @@ func (g *E8Gen) arrangeStack(f *Func) uint32 {
 	push(g.retAddr)
 
 	// return variables
-	for _, v := range f.rets[:3] {
-		push(v)
+	n := len(f.rets)
+	if n > 3 {
+		n = 3
+	}
+	if n > 0 {
+		for _, v := range f.rets[:n] {
+			push(v)
+		}
 	}
 
 	// arguments
-	for _, v := range f.args[:3] {
-		push(v)
+	n = len(f.args)
+	if n > 3 {
+		n = 3
+	}
+	if n > 0 {
+		for _, v := range f.args[:n] {
+			push(v)
+		}
 	}
 
 	// local variables
@@ -175,11 +205,17 @@ func (g *E8Gen) genFuncPrologue(f *Func) {
 		g.storeReg(0, v)
 	}
 
-	for i, v := range f.args[:3] {
-		if v.size != 4 {
-			panic("todo")
+	n := len(f.args)
+	if n > 3 {
+		n = 3
+	}
+	if n > 0 {
+		for i, v := range f.args[:n] {
+			if v.size != 4 {
+				panic("todo")
+			}
+			g.storeReg(uint8(i+1), v)
 		}
-		g.storeReg(uint8(i+1), v)
 	}
 
 	for _, v := range f.vars {
@@ -256,5 +292,15 @@ func (g *E8Gen) genCall(i *call) {
 		}
 	} else {
 		panic("todo")
+	}
+}
+
+func (g *E8Gen) PrintInst(out io.Writer) {
+	for _, inst := range g.insts {
+		fmt.Fprint(out, e8i.Inst(inst.i).String())
+		if inst.lateBind {
+			fmt.Fprintf(out, "  // %s.%s", inst.bindMod, inst.bindSym)
+		}
+		fmt.Fprintln(out)
 	}
 }

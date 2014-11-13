@@ -19,5 +19,7 @@ func main() {
 		return
 	}
 
-	obj.Sim(os.Stdout)
+	// obj.Sim(os.Stdout)
+	e8gen := obj.GenE8()
+	e8gen.PrintInst(os.Stdout)
 }

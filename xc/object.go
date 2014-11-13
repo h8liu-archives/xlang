@@ -34,3 +34,10 @@ func (obj *Object) PrintIR(out io.Writer) {
 func (obj *Object) Sim(out io.Writer) {
 	ir.SimFunc(obj.f, out)
 }
+
+// GenE8 generates e8 instructions.
+func (obj *Object) GenE8() *ir.E8Gen {
+	ret := ir.NewE8Gen()
+	ret.GenFunc(obj.f)
+	return ret
+}
