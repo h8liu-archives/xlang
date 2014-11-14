@@ -1,3 +1,6 @@
+package jasm
+
+const header = `
 function jasm(stdlib, foreign, heap) {
     "use asm";
 
@@ -48,12 +51,9 @@ function jasm(stdlib, foreign, heap) {
         var nextpc = 0;
         nextpc = (pc + 4) | 0;
         switch (pc|0) {
-        case 0: memU32[r0 >> 2] = r1|0; break; // memory access
-        case 1: if ((r1|0) == (r2|0)) { nextpc = 3|0; } break; // jmp
-        case 2: ret = nextpc; nextpc = ((nextpc|0) + 232) | 0; // call
-        case 3: nextpc = ret|0; // return
-        case 4: memU32[(sp + 4)>>2] = r1|0; break;
-        case 0x6: memF64[(sp + 8)>>3] = f0; break;
+`
+
+const footer = `
         default: err = 1|0;
         }
 
@@ -93,8 +93,10 @@ function jasm(stdlib, foreign, heap) {
         getf1: getf1,
         getf2: getf2,
         getf3: getf3,
+        
         clearRegs: clearRegs,
 
         run: run,
     };
 }
+`

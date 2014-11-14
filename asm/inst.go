@@ -6,22 +6,31 @@ type sym struct {
 
 type rinst struct {
 	funct uint32
-	rs uint32
-	rt uint32
-	rd uint32
+	rs    uint32
+	rt    uint32
+	rd    uint32
 }
 
 type iinst struct {
-	op uint32
-	rs uint32
-	rt uint32
-	im uint32
+	op    uint32
+	rs    uint32
+	rt    uint32
+	im    uint32
 	imSym *sym
 }
 
 type jinst struct {
-	op uint32
+	op  uint32
 	off uint32
 	sym *sym
 }
 
+type hexs struct {
+	isChars bool
+	bs      []byte
+}
+
+type i32s struct {
+	signed bool
+	d      []uint32
+}
