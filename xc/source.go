@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/h8liu/xlang/asm"
 	"github.com/h8liu/xlang/parser"
 	"github.com/h8liu/xlang/xast"
 )
@@ -76,4 +77,14 @@ func (s *Source) BuildStmtsAST() (*xast.Block, *parser.ErrList) {
 	}
 
 	return tree, nil
+}
+
+// Assemble assembles a assembly file.
+func (s *Source) Assemble() (*asm.Object, *parser.ErrList) {
+	ret, errs := asm.Assemble(s.File, s.Reader)
+	if errs != nil {
+		return nil, errs
+	}
+
+	return ret, nil
 }
