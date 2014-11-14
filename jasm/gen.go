@@ -48,23 +48,23 @@ function jasm(stdlib, foreign, heap) {
     }
 
     function step() {
-        var nextpc = 0;
-        nextpc = (pc + 4) | 0;
-        switch (pc|0) {
+		var pc = 0;
+		pc_ = pc|0;
+        pc = (pc + 4) | 0;
+
+        switch (pc_|0) {
 `
 
 const footer = `
         default: err = 1|0;
         }
-
-        return nextpc|0;
     }
 
     function run(ncycle) {
         ncycle = ncycle|0;
 
         while (ncycle|0 > 0) {
-            pc = step()|0;
+            step();
             r0 = 0|0;
             ncycle = ((ncycle|0) + -1)|0;
 
