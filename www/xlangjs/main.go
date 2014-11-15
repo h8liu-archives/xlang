@@ -52,6 +52,8 @@ func tokenClass(t *parser.Tok) string {
 		return "keyword"
 	case parser.TypeComment:
 		return "comment"
+	case parser.TypeEOF:
+		return "eof"
 	}
 
 	return "na"
@@ -84,6 +86,8 @@ func parseTokens(file, code string) string {
 
 				if class == "implicit-semi" {
 					fmt.Fprintf(out, ";")
+				} else if class == "eof" {
+					fmt.Fprintf(out, "#")
 				}
 
 				curPos = 0

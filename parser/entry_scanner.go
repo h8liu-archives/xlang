@@ -162,6 +162,25 @@ func (s *EntryScanner) Entry() *Entry {
 	return nil
 }
 
+// End tests if the scanner has reached its end.
+func (s *EntryScanner) End() bool {
+	return s.Entry() == nil
+}
+
+// Block returns the current block entry.
+// It panics if the current token is not a block.
+func (s *EntryScanner) Block() *Block {
+	entry := s.Entry()
+	if entry == nil {
+		return nil
+	}
+	if entry.Block == nil {
+		panic("current entry is not a block")
+	}
+
+	return entry.Block
+}
+
 // Pos returns the pos
 func (s *EntryScanner) Pos() *Pos {
 	entry := s.Entry()

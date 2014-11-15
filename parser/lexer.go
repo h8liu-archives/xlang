@@ -181,7 +181,7 @@ func (lex *Lexer) Scan() bool {
 	if lex.c.EOF() {
 		lex.hold = &Tok{
 			TypeEOF,
-			"eof",
+			"",
 			lex.c.Pos(),
 		}
 		return false
