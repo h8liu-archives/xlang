@@ -72,22 +72,23 @@ func (p *parser) parseEntry() *Entry {
 }
 
 // parseStmt returns a statement, or nil when reaching end of a block
-func (p *parser) parseStmt() Stmt {
-	var ret Stmt
+func (p *parser) parseStmt() *Stmt {
+	ret := new(Stmt)
 
 	for {
 		e := p.parseEntry()
 		if e == nil {
+			ret.End = p.lex.Token()
 			break
 		}
-		ret = append(ret, e)
+		ret.Entries = append(ret.Entries, e)
 	}
 
-	if ret == nil {
+	if ret.Entries == nil {
 		if p.lex.EOF() || endBlockToken(p.lex.Token()) {
 			return nil
 		}
-		return make(Stmt, 0)
+		return ret
 	}
 
 	return ret

@@ -7,11 +7,14 @@ package parser
 type Block struct {
 	Lbrace *Tok
 	Rbrace *Tok
-	Stmts  []Stmt
+	Stmts  []*Stmt
 }
 
 // Stmt defines a series of token entries
-type Stmt []*Entry
+type Stmt struct {
+	Entries []*Entry
+	End     *Tok
+}
 
 // Entry defines a token entry, which could be a single token or a block
 type Entry struct {

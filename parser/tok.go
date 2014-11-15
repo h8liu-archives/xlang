@@ -17,6 +17,7 @@ const (
 	TypeFloat
 	TypeString
 	TypeKeyword
+	TypeEOF
 )
 
 // Tok is a token in a file
@@ -27,6 +28,7 @@ type Tok struct {
 }
 
 var typeStr = map[Type]string{
+	TypeEOF:      "eof",
 	TypeInvalid:  "invalid",
 	TypeComment:  "comment",
 	TypeOperator: "operator",
@@ -38,6 +40,7 @@ var typeStr = map[Type]string{
 }
 
 var typeShortStr = map[Type]string{
+	TypeEOF:      "eof",
 	TypeInvalid:  "iv",
 	TypeComment:  "cm",
 	TypeOperator: "op",

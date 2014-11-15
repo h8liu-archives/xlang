@@ -133,7 +133,7 @@ func parseTokens(file, code string) string {
 
 func _parse(file, code string) (block, errs string) {
 	var ident = 0
-	var printStmt func(s parser.Stmt)
+	var printStmt func(s *parser.Stmt)
 	out := new(bytes.Buffer)
 	errOut := new(bytes.Buffer)
 
@@ -156,13 +156,13 @@ func _parse(file, code string) (block, errs string) {
 		fmt.Fprintf(out, `<span class="brace">}</span> `)
 	}
 
-	printStmt = func(s parser.Stmt) {
+	printStmt = func(s *parser.Stmt) {
 		printIdent()
 
-		if len(s) == 0 {
+		if len(s.Entries) == 0 {
 			fmt.Fprintf(out, `<span class="empty">(empty statement)</span>`)
 		} else {
-			for _, e := range s {
+			for _, e := range s.Entries {
 				if e.Block != nil {
 					printBlock(e.Block)
 				} else {

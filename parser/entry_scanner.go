@@ -2,7 +2,7 @@ package parser
 
 // EntryScanner is helps on parsing a statement
 type EntryScanner struct {
-	s     Stmt
+	s     *Stmt
 	index int
 
 	accepted *Tok
@@ -10,7 +10,7 @@ type EntryScanner struct {
 }
 
 // NewEntryScanner creates a new EntryScanner
-func NewEntryScanner(s Stmt) *EntryScanner {
+func NewEntryScanner(s *Stmt) *EntryScanner {
 	ret := new(EntryScanner)
 	ret.s = s
 	return ret
@@ -19,12 +19,12 @@ func NewEntryScanner(s Stmt) *EntryScanner {
 func (s *EntryScanner) next() {
 	s.index++
 
-	if s.index >= len(s.s) {
-		if s.index > len(s.s) {
+	if s.index >= len(s.s.Entries) {
+		if s.index > len(s.s.Entries) {
 			panic("EntryScanner over running")
 		}
 
-		entry := s.s[s.index-1]
+		entry := s.s.Entries[s.index-1]
 		if entry.Block != nil {
 			s.last = entry.Block.Lbrace
 		} else {
@@ -155,8 +155,8 @@ func (s *EntryScanner) SeeBlock() bool {
 
 // Entry returns the current entry
 func (s *EntryScanner) Entry() *Entry {
-	if s.index < len(s.s) {
-		return s.s[s.index]
+	if s.index < len(s.s.Entries) {
+		return s.s.Entries[s.index]
 	}
 
 	return nil

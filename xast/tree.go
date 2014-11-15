@@ -59,7 +59,7 @@ func (t *Tree) parseProg(ret *Module, b *parser.Block) {
 
 func (t *Tree) parseStmts(ret *Block, b *parser.Block) {
 	for _, s := range b.Stmts {
-		if len(s) == 0 {
+		if len(s.Entries) == 0 {
 			continue // empty statement
 		}
 
@@ -76,7 +76,7 @@ func (t *Tree) parseStmts(ret *Block, b *parser.Block) {
 
 func (t *Tree) parseExprs(ret *Block, b *parser.Block) {
 	for _, s := range b.Stmts {
-		if len(s) == 0 {
+		if len(s.Entries) == 0 {
 			continue // empty expr
 		}
 
