@@ -1,3 +1,5 @@
+**This project is deprecated. I rewrite it as [e8vm](https://github.com/h8liu/e8vm).** 
+
 [![BuildStatus](https://travis-ci.org/h8liu/xlang.png?branch=master)](https://travis-ci.org/h8liu/xlang)
 
 # Xlang
